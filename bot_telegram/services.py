@@ -1319,7 +1319,7 @@ def handle_incoming_telegram_update(payload: dict) -> None:
             return
 
         prof.telegram_user_id = tg_user_id
-        prof.telegram_link_code = ""
+        prof.telegram_link_code = None
         prof.save(update_fields=["telegram_user_id", "telegram_link_code"])
 
         TelegramLink.objects.update_or_create(

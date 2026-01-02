@@ -1,6 +1,7 @@
 # accounts/models.py
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 
 
 class UserProfile(models.Model):
@@ -26,13 +27,28 @@ class UserProfile(models.Model):
     telegram_chat_id = models.BigIntegerField(null=True, blank=True)
 
     # Telegram
-    telegram_user_id = models.CharField(max_length=32, blank=True, null=True, unique=True)
+    telegram_user_id = models.CharField(max_length=32, blank=True, null=True)  # 👈 ya NO unique=True
     telegram_username = models.CharField(max_length=64, blank=True, null=True)
 
     # Código para vincular Telegram desde web -> /start CODE
-    telegram_link_code = models.CharField(max_length=64, blank=True, null=True, unique=True)
+    telegram_link_code = models.CharField(max_length=64, blank=True, null=True)  # 👈 ya NO unique=True
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            # ÚNICO solo si hay valor (no NULL y no "")
+            models.UniqueConstraint(
+                fields=["telegram_user_id"],
+                name="uniq_userprofile_telegram_user_id_when_present",
+                condition=Q(telegram_user_id__isnull=False) & ~Q(telegram_user_id=""),
+            ),
+            models.UniqueConstraint(
+                fields=["telegram_link_code"],
+                name="uniq_userprofile_telegram_link_code_when_present",
+                condition=Q(telegram_link_code__isnull=False) & ~Q(telegram_link_code=""),
+            ),
+        ]
 
     def __str__(self):
         return f"Profile({self.user_id})"
