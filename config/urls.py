@@ -1,6 +1,11 @@
 from django.contrib import admin
+from django.http import JsonResponse
 from django.urls import include, path
 from django.views.generic import RedirectView
+
+
+def healthz(request):
+    return JsonResponse({"ok": True})
 
 urlpatterns = [
     path("i18n/", include("django.conf.urls.i18n")),
@@ -22,4 +27,5 @@ urlpatterns = [
     path("budgets/", include("budgets.urls")),
     path("cards/", include("cards.urls")),
     path("", include("ocr_receipts.urls")),
+    path("healthz/", healthz, name="healthz"),
 ]
