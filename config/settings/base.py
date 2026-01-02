@@ -6,7 +6,7 @@ from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent  # .../finanzas_bot
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 # -----------------------
 # Helpers
@@ -35,9 +35,11 @@ def env_list(name: str, default: list[str] | None = None) -> list[str]:
 # -----------------------
 # Local .env loader (DEV)
 # -----------------------
+# En Render normalmente NO necesitas .env file. Esto no molesta si no existe.
 try:
-    from dotenv import load_dotenv  # pip install python-dotenv
+    from dotenv import load_dotenv  # python-dotenv
     load_dotenv(BASE_DIR / ".env")
+    load_dotenv(BASE_DIR / ".env.local", override=True)
 except Exception:
     pass
 
@@ -45,11 +47,9 @@ except Exception:
 # Core
 # -----------------------
 SECRET_KEY = env_required("DJANGO_SECRET_KEY")
+DEBUG = False  # se define en dev.py/prod.py
 
-# DEBUG lo define cada settings (dev/prod)
-DEBUG = False
-
-ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", default=["127.0.0.1", "localhost", "192.168.1.83"])
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", default=["127.0.0.1", "localhost"])
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
 
 # -----------------------
@@ -113,17 +113,20 @@ WSGI_APPLICATION = "config.wsgi.application"
 # Database
 # -----------------------
 DATABASE_URL = env("DATABASE_URL")
-
 if DATABASE_URL:
     try:
         import dj_database_url
         DATABASES = {
-            "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG)
+            "default": dj_database_url.parse(
+                DATABASE_URL,
+                conn_max_age=600,
+                ssl_require=not DEBUG
+            )
         }
     except Exception as e:
         raise RuntimeError(
-            "DATABASE_URL está definido pero falta 'dj-database-url' "
-            f"o hubo error parseando: {e}"
+            "DATABASE_URL está definido pero falta 'dj-database-url' o hay error parseando: "
+            f"{e}"
         )
 else:
     DATABASES = {
@@ -172,7 +175,7 @@ STORAGES = {
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # -----------------------
-# Email (se configura en dev/prod llamando setup_email)
+# Email (configurable por setup_email)
 # -----------------------
 SITE_URL: str
 DEFAULT_FROM_EMAIL: str
@@ -180,12 +183,13 @@ EMAIL_BACKEND: str
 
 def setup_email(*, allow_console: bool) -> None:
     """
-    Configura email de forma correcta según el entorno.
-    - En DEV permitimos console backend (imprime en logs).
-    - En PROD lo prohibimos: si queda console, levantamos error.
+    Configura email correctamente según entorno.
+    - DEV: permite console backend (imprime el email en logs).
+    - PROD: lo prohíbe, obliga SMTP real.
+    Soporta TLS (587) y SSL (465).
     """
     global SITE_URL, DEFAULT_FROM_EMAIL, EMAIL_BACKEND
-    global EMAIL_HOST, EMAIL_PORT, EMAIL_USE_TLS, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_TIMEOUT
+    global EMAIL_HOST, EMAIL_PORT, EMAIL_USE_TLS, EMAIL_USE_SSL, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_TIMEOUT
 
     SITE_URL = env_required("SITE_URL").rstrip("/")
     DEFAULT_FROM_EMAIL = env_required("DEFAULT_FROM_EMAIL").strip()
@@ -210,14 +214,21 @@ def setup_email(*, allow_console: bool) -> None:
     ):
         raise RuntimeError(
             "EMAIL_BACKEND está en modo DEV (console/locmem/dummy). "
-            "En producción debes usar SMTP: django.core.mail.backends.smtp.EmailBackend"
+            "En producción usa SMTP: django.core.mail.backends.smtp.EmailBackend"
         )
 
-    # Si es SMTP, exigimos variables
     if EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
         EMAIL_HOST = env_required("EMAIL_HOST")
         EMAIL_PORT = int(env_required("EMAIL_PORT"))
-        EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+
+        # TLS = STARTTLS (normalmente 587)
+        EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", False)
+        # SSL = implícito (normalmente 465)
+        EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
+
+        if EMAIL_USE_TLS and EMAIL_USE_SSL:
+            raise RuntimeError("Config inválida: EMAIL_USE_TLS y EMAIL_USE_SSL no pueden ser true a la vez.")
+
         EMAIL_HOST_USER = env_required("EMAIL_HOST_USER")
         EMAIL_HOST_PASSWORD = env_required("EMAIL_HOST_PASSWORD")
 
