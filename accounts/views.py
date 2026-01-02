@@ -125,7 +125,27 @@ def signup(request):
             prof.email_verified = False
             prof.save(update_fields=["email_verified"])
 
-            _send_verification_email(user)
+            try:
+                _send_verification_email(user)
+            except Exception as e:
+                # IMPORTANTE: evita 500 y deja log
+                import logging
+                logging.getLogger(__name__).exception("Email verification send failed: %s", e)
+
+                # Opcional: para que pueda reintentar registro sin conflicto
+                # user.delete()
+                # messages.error(request, "No pudimos enviar el correo. Intenta nuevamente más tarde.")
+                # return render(request, "accounts/signup.html", {"form": form})
+
+                # Mejor: mantener usuario creado y mostrar aviso
+                from django.contrib import messages
+                messages.error(
+                    request,
+                    "No pudimos enviar el correo de verificación (SMTP). "
+                    "Revisa la configuración de EMAIL_* en Render y vuelve a intentar."
+                )
+                return render(request, "accounts/signup.html", {"form": form})
+
             return render(request, "accounts/signup_done.html", {"email": user.email})
     else:
         form = SignUpForm()
