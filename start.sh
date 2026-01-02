@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Asegura que manage.py use PROD en Render (y puedas overridear por env si quieres)
+export DJANGO_SETTINGS_MODULE="${DJANGO_SETTINGS_MODULE:-config.settings.prod}"
+
 echo "Running migrations..."
 python manage.py migrate --noinput
 
