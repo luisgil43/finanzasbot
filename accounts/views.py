@@ -116,6 +116,27 @@ def signup(request):
 
     if request.method == "POST":
         form = SignUpForm(request.POST)
+
+        # ✅ Si intentan registrarse con un email ya existente:
+        email = (request.POST.get("email") or "").strip().lower()
+        if email:
+            existing = UserModel.objects.filter(email__iexact=email).first()
+            if existing:
+                if existing.is_active:
+                    messages.error(request, "Este correo ya tiene cuenta. Inicia sesión.")
+                    return render(request, "accounts/signup.html", {"form": form})
+
+                # Si existe pero está inactiva => reenviar verificación
+                try:
+                    _send_verification_email(existing)
+                    messages.success(request, "Te reenviamos el correo de verificación ✅")
+                    return render(request, "accounts/signup_done.html", {"email": existing.email})
+                except Exception:
+                    import logging
+                    logging.getLogger(__name__).exception("Resend verification failed")
+                    messages.error(request, "No pudimos reenviar el correo ahora. Intenta nuevamente.")
+                    return render(request, "accounts/signup.html", {"form": form})
+
         if form.is_valid():
             user = form.save(commit=False)
             user.is_active = False
@@ -128,28 +149,22 @@ def signup(request):
             try:
                 _send_verification_email(user)
             except Exception as e:
-                # IMPORTANTE: evita 500 y deja log
                 import logging
                 logging.getLogger(__name__).exception("Email verification send failed: %s", e)
-
-                # Opcional: para que pueda reintentar registro sin conflicto
-                # user.delete()
-                # messages.error(request, "No pudimos enviar el correo. Intenta nuevamente más tarde.")
-                # return render(request, "accounts/signup.html", {"form": form})
-
-                # Mejor: mantener usuario creado y mostrar aviso
-                from django.contrib import messages
                 messages.error(
                     request,
                     "No pudimos enviar el correo de verificación (SMTP). "
-                    "Revisa la configuración de EMAIL_* en Render y vuelve a intentar."
+                    "Intenta nuevamente en unos minutos."
                 )
+                # opcional: evitar cuentas muertas
+                # user.delete()
                 return render(request, "accounts/signup.html", {"form": form})
 
             return render(request, "accounts/signup_done.html", {"email": user.email})
-    else:
-        form = SignUpForm()
 
+        return render(request, "accounts/signup.html", {"form": form})
+
+    form = SignUpForm()
     return render(request, "accounts/signup.html", {"form": form})
 
 
