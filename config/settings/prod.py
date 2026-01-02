@@ -3,9 +3,6 @@ from .base import *
 
 DEBUG = False
 
-# PROD: prohibimos console backend, obliga SMTP real
-setup_email(allow_console=False)
-
 SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
 SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", True)
 CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", True)

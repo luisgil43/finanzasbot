@@ -6,7 +6,7 @@ from pathlib import Path
 
 from django.utils.translation import gettext_lazy as _
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent  # .../finanzas_bot
 
 # -----------------------
 # Helpers
@@ -35,21 +35,26 @@ def env_list(name: str, default: list[str] | None = None) -> list[str]:
 # -----------------------
 # Local .env loader (DEV)
 # -----------------------
-# En Render normalmente NO necesitas .env file. Esto no molesta si no existe.
 try:
-    from dotenv import load_dotenv  # python-dotenv
+    from dotenv import load_dotenv  # pip install python-dotenv
     load_dotenv(BASE_DIR / ".env")
-    load_dotenv(BASE_DIR / ".env.local", override=True)
 except Exception:
     pass
+
 
 # -----------------------
 # Core
 # -----------------------
 SECRET_KEY = env_required("DJANGO_SECRET_KEY")
-DEBUG = False  # se define en dev.py/prod.py
 
-ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", default=["127.0.0.1", "localhost"])
+# DEBUG lo define cada settings (dev/prod)
+DEBUG = False
+
+ALLOWED_HOSTS = env_list(
+    "DJANGO_ALLOWED_HOSTS",
+    default=["127.0.0.1", "localhost", "192.168.1.83"],
+)
+
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
 
 # -----------------------
@@ -109,10 +114,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+
 # -----------------------
 # Database
 # -----------------------
 DATABASE_URL = env("DATABASE_URL")
+
 if DATABASE_URL:
     try:
         import dj_database_url
@@ -120,13 +127,13 @@ if DATABASE_URL:
             "default": dj_database_url.parse(
                 DATABASE_URL,
                 conn_max_age=600,
-                ssl_require=not DEBUG
+                ssl_require=not DEBUG,
             )
         }
     except Exception as e:
         raise RuntimeError(
-            "DATABASE_URL está definido pero falta 'dj-database-url' o hay error parseando: "
-            f"{e}"
+            "DATABASE_URL está definido pero falta 'dj-database-url' "
+            f"o hubo error parseando: {e}"
         )
 else:
     DATABASES = {
@@ -135,6 +142,7 @@ else:
             "NAME": BASE_DIR / "db.sqlite3",
         }
     }
+
 
 # -----------------------
 # Password validation
@@ -145,6 +153,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
+
 
 # -----------------------
 # i18n / timezone
@@ -158,7 +167,9 @@ LANGUAGES = [
     ("en", _("English")),
 ]
 LOCALE_PATHS = [BASE_DIR / "locale"]
+
 TIME_ZONE = "America/Santiago"
+
 
 # -----------------------
 # Static
@@ -174,69 +185,46 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# -----------------------
-# Email (configurable por setup_email)
-# -----------------------
-SITE_URL: str
-DEFAULT_FROM_EMAIL: str
-EMAIL_BACKEND: str
 
-def setup_email(*, allow_console: bool) -> None:
-    """
-    Configura email correctamente según entorno.
-    - DEV: permite console backend (imprime el email en logs).
-    - PROD: lo prohíbe, obliga SMTP real.
-    Soporta TLS (587) y SSL (465).
-    """
-    global SITE_URL, DEFAULT_FROM_EMAIL, EMAIL_BACKEND
-    global EMAIL_HOST, EMAIL_PORT, EMAIL_USE_TLS, EMAIL_USE_SSL, EMAIL_HOST_USER, EMAIL_HOST_PASSWORD, EMAIL_TIMEOUT
+# -----------------------
+# Email (SMTP en prod / soporta TLS y SSL)
+# -----------------------
+SITE_URL = env_required("SITE_URL").rstrip("/")
+DEFAULT_FROM_EMAIL = env_required("DEFAULT_FROM_EMAIL").strip()
 
-    SITE_URL = env_required("SITE_URL").rstrip("/")
-    DEFAULT_FROM_EMAIL = env_required("DEFAULT_FROM_EMAIL").strip()
+EMAIL_BACKEND = (env("EMAIL_BACKEND") or "").strip()
+if not EMAIL_BACKEND:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+
+if EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
+    EMAIL_HOST = env_required("EMAIL_HOST").strip()
+    EMAIL_PORT = int(env_required("EMAIL_PORT"))
+
+    # soportar ambos:
+    EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", False)  # STARTTLS (587)
+    EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)  # SSL (465)
+
+    EMAIL_HOST_USER = env_required("EMAIL_HOST_USER").strip()
+    EMAIL_HOST_PASSWORD = env_required("EMAIL_HOST_PASSWORD")
 
     EMAIL_TIMEOUT = int(env("EMAIL_TIMEOUT", "20"))
 
-    raw_backend = (env("EMAIL_BACKEND") or "").strip()
-    if raw_backend:
-        EMAIL_BACKEND = raw_backend
-    else:
-        EMAIL_BACKEND = (
-            "django.core.mail.backends.console.EmailBackend"
-            if allow_console
-            else "django.core.mail.backends.smtp.EmailBackend"
-        )
+    # defaults inteligentes si no seteas
+    if not (EMAIL_USE_TLS or EMAIL_USE_SSL):
+        if EMAIL_PORT == 465:
+            EMAIL_USE_SSL = True
+        elif EMAIL_PORT == 587:
+            EMAIL_USE_TLS = True
 
-    # En PROD NO permitimos console/locmem/dummy
-    if not allow_console and EMAIL_BACKEND in (
-        "django.core.mail.backends.console.EmailBackend",
-        "django.core.mail.backends.locmem.EmailBackend",
-        "django.core.mail.backends.dummy.EmailBackend",
-    ):
-        raise RuntimeError(
-            "EMAIL_BACKEND está en modo DEV (console/locmem/dummy). "
-            "En producción usa SMTP: django.core.mail.backends.smtp.EmailBackend"
-        )
+    if EMAIL_USE_TLS and EMAIL_USE_SSL:
+        raise RuntimeError("No puedes usar EMAIL_USE_TLS y EMAIL_USE_SSL al mismo tiempo.")
 
-    if EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
-        EMAIL_HOST = env_required("EMAIL_HOST")
-        EMAIL_PORT = int(env_required("EMAIL_PORT"))
-
-        # TLS = STARTTLS (normalmente 587)
-        EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", False)
-        # SSL = implícito (normalmente 465)
-        EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
-
-        if EMAIL_USE_TLS and EMAIL_USE_SSL:
-            raise RuntimeError("Config inválida: EMAIL_USE_TLS y EMAIL_USE_SSL no pueden ser true a la vez.")
-
-        EMAIL_HOST_USER = env_required("EMAIL_HOST_USER")
-        EMAIL_HOST_PASSWORD = env_required("EMAIL_HOST_PASSWORD")
 
 # -----------------------
 # Telegram (SIEMPRE env)
 # -----------------------
 TELEGRAM_BOT_TOKEN = env_required("TELEGRAM_BOT_TOKEN")
-TELEGRAM_BOT_USERNAME = env_required("TELEGRAM_BOT_USERNAME")
+TELEGRAM_BOT_USERNAME = env_required("TELEGRAM_BOT_USERNAME")  # ej: MiFinanzasBot
 TELEGRAM_WEBHOOK_SECRET = env("TELEGRAM_WEBHOOK_SECRET", "")
 
 # -----------------------
