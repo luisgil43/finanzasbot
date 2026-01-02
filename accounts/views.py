@@ -328,10 +328,17 @@ def telegram_link(request):
     prof.save(update_fields=["telegram_link_code"])
 
     deep_link = f"https://t.me/{settings.TELEGRAM_BOT_USERNAME}?start={code}"
+    start_command = f"/start {code}"
+
     return render(
         request,
         "accounts/telegram_link.html",
-        {"deep_link": deep_link, "code": code, "profile": prof},
+        {
+            "deep_link": deep_link,
+            "code": code,
+            "start_command": start_command,  # ✅ NUEVO
+            "profile": prof,
+        },
     )
 
 

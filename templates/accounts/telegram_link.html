@@ -7,14 +7,35 @@
 <div class="max-w-2xl">
   <div class="rounded-3xl border border-white/10 bg-white/5 p-6">
     <h1 class="text-2xl font-semibold mb-2">{% trans "Vincular Telegram" %}</h1>
-    <p class="text-sm text-slate-300 mb-6">
+
+    <p class="text-sm text-slate-300 mb-4">
       {% trans "Abre este enlace, presiona START y quedará vinculado tu usuario." %}
     </p>
 
-    <a href="{{ deep_link }}" target="_blank"
+    <!-- ✅ IMPORTANTE: el click copia /start CODE al portapapeles automáticamente -->
+    <a href="{{ deep_link }}" target="_blank" id="btn-telegram"
        class="inline-flex items-center gap-2 rounded-2xl px-4 py-3 bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 font-semibold">
       🚀 {% trans "Abrir Telegram" %}
     </a>
+
+    <div id="copy-status" class="mt-3 text-xs text-emerald-300 hidden"></div>
+
+    <div class="mt-4 rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+      <div class="text-xs text-slate-400">
+        {% trans "Si Telegram no te vincula al presionar START (por ejemplo, si ya habías usado el bot antes), pega y envía este comando (ya queda copiado al hacer click):" %}
+      </div>
+
+      <div class="mt-2 flex flex-col gap-2">
+        <div class="rounded-xl border border-white/10 bg-black/30 p-3 font-mono text-sm text-slate-100 break-all" id="start-command">
+          {{ start_command }}
+        </div>
+
+        <button type="button" id="btn-copy"
+          class="w-fit inline-flex items-center gap-2 rounded-xl px-3 py-2 bg-white/10 hover:bg-white/15 text-slate-100 text-sm">
+          📋 {% trans "Copiar comando" %}
+        </button>
+      </div>
+    </div>
 
     <div class="mt-4 text-xs text-slate-400 break-all">
       <div class="mb-1">{% trans "Deep link" %}:</div>
@@ -23,4 +44,53 @@
     </div>
   </div>
 </div>
+
+<script>
+(function() {
+  const cmd = {{ start_command|json_script:"startcmd" }};
+  const startCommand = JSON.parse(document.getElementById("startcmd").textContent);
+
+  const status = document.getElementById("copy-status");
+  const btnTg = document.getElementById("btn-telegram");
+  const btnCopy = document.getElementById("btn-copy");
+
+  async function copyToClipboard(text) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (e) {
+      // fallback: textarea
+      try {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        return true;
+      } catch (e2) {
+        return false;
+      }
+    }
+  }
+
+  function showCopied(ok) {
+    status.classList.remove("hidden");
+    status.textContent = ok
+      ? "✅ Comando copiado. Si no se vincula con START, pega y envía en Telegram."
+      : "⚠️ No pude copiar automáticamente. Usa el botón 'Copiar comando'.";
+  }
+
+  btnTg.addEventListener("click", async function() {
+    const ok = await copyToClipboard(startCommand);
+    showCopied(ok);
+    // el link igual abre Telegram en otra pestaña/ventana por target=_blank
+  });
+
+  btnCopy.addEventListener("click", async function() {
+    const ok = await copyToClipboard(startCommand);
+    showCopied(ok);
+  });
+})();
+</script>
 {% endblock %}

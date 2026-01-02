@@ -41,8 +41,18 @@ def _lang_for_profile(prof: UserProfile) -> str:
 _MSG = {
     "es": {
         "not_linked": "Aún no estás vinculado. En la web: Vincular Telegram.",
-        "link_need_code": "Usa el link de vinculación desde la web para conectar tu cuenta.",
-        "link_bad_code": "Código inválido o expirado. Genera uno nuevo desde la web.",
+
+        # ✅ Mensajes corregidos para que el usuario entienda que debe venir desde el link de la web
+        "link_need_code": (
+            "⚠️ Para vincular tu cuenta debes usar el botón **Vincular Telegram** desde la web.\n\n"
+            "Entra a la web → Vincular Telegram → Abrir Telegram.\n"
+            "Luego presiona START y quedará vinculado automáticamente ✅"
+        ),
+        "link_bad_code": (
+            "❌ Código inválido o expirado.\n"
+            "Vuelve a la web → Vincular Telegram → Abrir Telegram para generar uno nuevo."
+        ),
+
         "link_ok": (
             "✅ Listo, Telegram vinculado.\n\n"
             "Opciones rápidas:\n"
@@ -188,8 +198,18 @@ _MSG = {
     },
     "en": {
         "not_linked": "You are not linked yet. On the web: Link Telegram.",
-        "link_need_code": "Use the link from the web to connect your account.",
-        "link_bad_code": "Invalid/expired code. Generate a new one from the web.",
+
+        # ✅ Updated messages
+        "link_need_code": (
+            "⚠️ To link your account, use the **Link Telegram** button on the web.\n\n"
+            "Go to the web → Link Telegram → Open Telegram.\n"
+            "Then press START and it will link automatically ✅"
+        ),
+        "link_bad_code": (
+            "❌ Invalid or expired code.\n"
+            "Go back to the web → Link Telegram → Open Telegram to generate a new one."
+        ),
+
         "link_ok": (
             "✅ Linked.\n\n"
             "Quick options:\n"
