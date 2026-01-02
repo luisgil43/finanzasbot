@@ -12,8 +12,8 @@
       {% trans "Abre este enlace, presiona START y quedará vinculado tu usuario." %}
     </p>
 
-    <!-- ✅ IMPORTANTE: el click copia /start CODE al portapapeles automáticamente -->
-    <a href="{{ deep_link }}" target="_blank" id="btn-telegram"
+    <!-- ✅ Click: copia /start CODE al portapapeles y abre Telegram -->
+    <a href="{{ deep_link }}" target="_blank" rel="noopener" id="btn-telegram"
        class="inline-flex items-center gap-2 rounded-2xl px-4 py-3 bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 font-semibold">
       🚀 {% trans "Abrir Telegram" %}
     </a>
@@ -45,9 +45,11 @@
   </div>
 </div>
 
+{# ✅ ESTO DEBE IR FUERA DEL <script> PRINCIPAL #}
+{{ start_command|json_script:"startcmd" }}
+
 <script>
 (function() {
-  const cmd = {{ start_command|json_script:"startcmd" }};
   const startCommand = JSON.parse(document.getElementById("startcmd").textContent);
 
   const status = document.getElementById("copy-status");
@@ -84,7 +86,7 @@
   btnTg.addEventListener("click", async function() {
     const ok = await copyToClipboard(startCommand);
     showCopied(ok);
-    // el link igual abre Telegram en otra pestaña/ventana por target=_blank
+    // El link abre Telegram por target=_blank
   });
 
   btnCopy.addEventListener("click", async function() {
