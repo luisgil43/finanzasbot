@@ -7,11 +7,9 @@ from urllib.parse import urlparse
 
 from django.utils.translation import gettext_lazy as _
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent  # .../finanzas_bot
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# -----------------------
-# Helpers
-# -----------------------
+
 def env(name: str, default: str | None = None) -> str | None:
     return os.getenv(name, default)
 
@@ -34,46 +32,36 @@ def env_list(name: str, default: list[str] | None = None) -> list[str]:
     return [x.strip() for x in raw.split(",") if x.strip()]
 
 def env_str_or_default(name: str, default: str) -> str:
-    """Si existe pero viene vacío/espacios, usa default."""
     raw = os.getenv(name)
     if raw is None:
         return default
     raw = raw.strip()
     return raw if raw else default
 
+def _looks_falsey(s: str) -> bool:
+    return (s or "").strip().lower() in ("false", "0", "none", "null", "no", "off", "")
+
 def normalize_smtp_host(host: str) -> tuple[str, int | None]:
-    """
-    Acepta:
-      - mail.grupogzs.com
-      - mail.grupogzs.com:465
-      - smtp://mail.grupogzs.com:465
-      - smtps://mail.grupogzs.com:465
-    y devuelve (host, port_override)
-    """
     h = (host or "").strip()
     if not h:
         return "", None
 
-    # Caso URL smtp://...
+    # URL smtp://...
     if "://" in h:
         u = urlparse(h)
-        host_only = (u.hostname or "").strip()
-        port = u.port
-        return host_only, port
+        return (u.hostname or "").strip(), u.port
 
-    # Caso host:port
+    # host:port
     if ":" in h and h.count(":") == 1:
         left, right = h.split(":", 1)
         left = left.strip()
         right = right.strip()
         if right.isdigit():
             return left, int(right)
+
     return h, None
 
 
-# -----------------------
-# Local .env loader (DEV)
-# -----------------------
 try:
     from dotenv import load_dotenv
     load_dotenv(BASE_DIR / ".env")
@@ -81,19 +69,12 @@ except Exception:
     pass
 
 
-# -----------------------
-# Core
-# -----------------------
 SECRET_KEY = env_required("DJANGO_SECRET_KEY")
-
 DEBUG = False
 
-ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", default=["127.0.0.1", "localhost", "192.168.1.83"])
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", default=["127.0.0.1", "localhost"])
 CSRF_TRUSTED_ORIGINS = env_list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
 
-# -----------------------
-# Application definition
-# -----------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -147,33 +128,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-# -----------------------
-# Database
-# -----------------------
+
 DATABASE_URL = env("DATABASE_URL")
-
 if DATABASE_URL:
-    try:
-        import dj_database_url
-        DATABASES = {
-            "default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG)
-        }
-    except Exception as e:
-        raise RuntimeError(
-            "DATABASE_URL está definido pero falta 'dj-database-url' "
-            f"o hubo error parseando: {e}"
-        )
+    import dj_database_url
+    DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600, ssl_require=not DEBUG)}
 else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
+    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
 
-# -----------------------
-# Password validation
-# -----------------------
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -181,9 +143,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-# -----------------------
-# i18n / timezone
-# -----------------------
 USE_I18N = True
 USE_TZ = True
 
@@ -192,55 +151,58 @@ LANGUAGES = [("es", _("Español")), ("en", _("English"))]
 LOCALE_PATHS = [BASE_DIR / "locale"]
 TIME_ZONE = "America/Santiago"
 
-# -----------------------
-# Static
-# -----------------------
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
-
-STORAGES = {
-    "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-    }
-}
-
+STORAGES = {"staticfiles": {"BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage"}}
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+
 # -----------------------
-# Email (igual estilo GZ: defaults + exigir solo user/pass)
+# ✅ EMAIL (modo GZ: solo user/pass obligatorios) + auto SSL/TLS según puerto
 # -----------------------
 SITE_URL = env_required("SITE_URL").rstrip("/")
 
-EMAIL_BACKEND = env_str_or_default(
-    "EMAIL_BACKEND",
-    "django.core.mail.backends.smtp.EmailBackend",
-)
+EMAIL_BACKEND = env_str_or_default("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 
-# Ensure defaults aunque en Render exista la key pero vacía
 raw_host = env_str_or_default("EMAIL_HOST", "mail.grupogzs.com")
-host_clean, port_override = normalize_smtp_host(raw_host)
+# Si Render te mete "false" o basura, lo ignoramos
+if _looks_falsey(raw_host):
+    raw_host = "mail.grupogzs.com"
 
-# Si por alguna razón quedó vacío, caemos al default
+host_clean, port_override = normalize_smtp_host(raw_host)
 EMAIL_HOST = host_clean or "mail.grupogzs.com"
 
 EMAIL_PORT = int(env_str_or_default("EMAIL_PORT", "465"))
 if port_override:
     EMAIL_PORT = port_override
 
-# 465 = SSL por defecto
-EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", True)
-EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", False)
-
+# Credenciales (mínimo)
 EMAIL_HOST_USER = (os.environ.get("EMAIL_HOST_USER") or "").strip()
 EMAIL_HOST_PASSWORD = (os.environ.get("EMAIL_HOST_PASSWORD") or "").strip()
 
 DEFAULT_FROM_EMAIL = env_str_or_default("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "planix@grupogzs.com")
+
+# Auto modo según puerto (evita el error de mutually exclusive)
+if EMAIL_PORT == 465:
+    EMAIL_USE_SSL = True
+    EMAIL_USE_TLS = False
+elif EMAIL_PORT == 587:
+    EMAIL_USE_SSL = False
+    EMAIL_USE_TLS = True
+else:
+    # fallback configurable
+    EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
+    EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", False)
+    if EMAIL_USE_SSL and EMAIL_USE_TLS:
+        # preferimos SSL si ambos vinieron true
+        EMAIL_USE_TLS = False
 
 if EMAIL_BACKEND == "django.core.mail.backends.smtp.EmailBackend":
     if not EMAIL_HOST_USER:
         raise RuntimeError("Missing required env var: EMAIL_HOST_USER")
     if not EMAIL_HOST_PASSWORD:
         raise RuntimeError("Missing required env var: EMAIL_HOST_PASSWORD")
+
 
 # -----------------------
 # Telegram
@@ -249,9 +211,7 @@ TELEGRAM_BOT_TOKEN = env_required("TELEGRAM_BOT_TOKEN")
 TELEGRAM_BOT_USERNAME = env_required("TELEGRAM_BOT_USERNAME")
 TELEGRAM_WEBHOOK_SECRET = env("TELEGRAM_WEBHOOK_SECRET", "") or ""
 
-# -----------------------
-# Auth redirects
-# -----------------------
+
 LOGIN_URL = "/usuarios/login/"
 LOGIN_REDIRECT_URL = "/usuarios/"
 LOGOUT_REDIRECT_URL = "/usuarios/login/"
