@@ -1,0 +1,39 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Mi perfil" %} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl">
+  <div class="rounded-3xl border border-white/10 bg-white/5 p-6">
+    <h1 class="text-2xl font-semibold mb-2">{% trans "Mi perfil" %}</h1>
+    <p class="text-sm text-slate-300 mb-6">{% trans "Configura tu moneda e idioma preferido." %}</p>
+
+    <form method="post" class="space-y-5">
+      {% csrf_token %}
+
+      <div>
+        <label class="block text-sm text-slate-300 mb-2">{% trans "Moneda" %}</label>
+        <select name="currency"
+                class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20">
+          <option value="CLP" {% if profile.currency == "CLP" %}selected{% endif %}>CLP</option>
+          <option value="USD" {% if profile.currency == "USD" %}selected{% endif %}>USD</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm text-slate-300 mb-2">{% trans "Idioma" %}</label>
+        <select name="language"
+                class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20">
+          <option value="es" {% if profile.language == "es" %}selected{% endif %}>Español</option>
+          <option value="en" {% if profile.language == "en" %}selected{% endif %}>English</option>
+        </select>
+      </div>
+
+      <button class="rounded-2xl px-4 py-3 bg-white/10 hover:bg-white/15 border border-white/10 text-sm font-semibold">
+        {% trans "Guardar cambios" %}
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

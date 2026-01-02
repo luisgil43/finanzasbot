@@ -1,0 +1,74 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% if mode == "edit" %}{% trans "Editar presupuesto" %}{% else %}{% trans "Nuevo presupuesto" %}{% endif %}
+  · Finanzas Bot
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl space-y-6">
+
+  <div>
+    <h1 class="text-2xl font-semibold">
+      {% if mode == "edit" %}✏️ {% trans "Editar presupuesto" %}{% else %}➕ {% trans "Nuevo presupuesto" %}{% endif %}
+    </h1>
+    <p class="text-slate-300 text-sm">{% trans "Define un monto mensual por categoría (CLP)." %}</p>
+  </div>
+
+  <form method="post" class="rounded-3xl border border-white/10 bg-white/5 p-6 space-y-4">
+    {% csrf_token %}
+
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Mes" %}</label>
+        <input type="month" name="month" value="{{ month_value }}"
+               class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm" required>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Categoría" %}</label>
+        <select name="category_id"
+                class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm" required>
+          <option value="">{% trans "Selecciona..." %}</option>
+          {% for c in categories %}
+            <option value="{{ c.id }}"
+              {% if data.category_id|default:'' == c.id|stringformat:"s" %}selected{% endif %}>
+              {{ c.name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Monto (CLP)" %}</label>
+        <input name="amount_clp" value="{{ data.amount_clp|default:'' }}"
+               placeholder="{% trans 'Ej: 450.000' %}"
+               class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm" required>
+        <div class="text-xs text-slate-400 mt-1">{% trans "Tip: puedes escribir con puntos de miles." %}</div>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Nota" %}</label>
+        <input name="note" value="{{ data.note|default:'' }}"
+               placeholder="{% trans 'Opcional...' %}"
+               class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+      <button class="rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm">
+        ✅ {% trans "Guardar" %}
+      </button>
+
+      <a href="{% url 'budgets:list' %}?month={{ month_value }}"
+         class="rounded-2xl border border-white/10 bg-transparent hover:bg-white/5 px-4 py-2 text-sm">
+        ← {% trans "Volver" %}
+      </a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

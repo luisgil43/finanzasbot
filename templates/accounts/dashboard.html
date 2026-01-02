@@ -1,0 +1,152 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+{% load money %}
+
+{% block title %}{% trans "Dashboard" %} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="grid xl:grid-cols-3 gap-6">
+  <div class="xl:col-span-2 space-y-6">
+
+    <div class="rounded-3xl border border-white/10 bg-white/5 p-6">
+      <h2 class="text-xl font-semibold mb-2">{% trans "Resumen del mes" %}</h2>
+      <p class="text-slate-300 text-sm">{% trans "Totales del mes en base a tus transacciones (web y Telegram)." %}</p>
+
+      <div class="mt-6 grid sm:grid-cols-3 gap-3">
+
+        <!-- Gasto -->
+        <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+          <div class="text-xs text-slate-400">{% trans "Gasto mes" %}</div>
+          <div class="text-2xl font-semibold">
+            {{ total_expense_clp|money:"CLP" }}
+            <span class="text-base text-slate-300">CLP</span>
+          </div>
+
+          {% if profile.currency == "USD" %}
+            <div class="mt-1 text-xs text-slate-400">
+              ≈ {{ total_expense_usd|money:"USD" }} USD
+              <span class="text-slate-500">(FX {{ fx.rate|money:"CLP" }} CLP/USD · {{ fx.source }})</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Ingreso -->
+        <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+          <div class="text-xs text-slate-400">{% trans "Ingreso mes" %}</div>
+          <div class="text-2xl font-semibold">
+            {{ total_income_clp|money:"CLP" }}
+            <span class="text-base text-slate-300">CLP</span>
+          </div>
+
+          {% if profile.currency == "USD" %}
+            <div class="mt-1 text-xs text-slate-400">
+              ≈ {{ total_income_usd|money:"USD" }} USD
+              <span class="text-slate-500">(FX {{ fx.rate|money:"CLP" }} CLP/USD · {{ fx.source }})</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Balance -->
+        <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+          <div class="text-xs text-slate-400">{% trans "Balance" %}</div>
+          <div class="text-2xl font-semibold">
+            {{ balance_clp|money:"CLP" }}
+            <span class="text-base text-slate-300">CLP</span>
+          </div>
+
+          {% if profile.currency == "USD" %}
+            <div class="mt-1 text-xs text-slate-400">
+              ≈ {{ balance_usd|money:"USD" }} USD
+              <span class="text-slate-500">(FX {{ fx.rate|money:"CLP" }} CLP/USD · {{ fx.source }})</span>
+            </div>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+
+    <div class="rounded-3xl border border-white/10 bg-white/5 p-6">
+      <h2 class="text-xl font-semibold mb-2">{% trans "Actividad reciente" %}</h2>
+      <p class="text-slate-300 text-sm">{% trans "Últimos movimientos registrados." %}</p>
+
+      <div class="mt-4 overflow-x-auto rounded-2xl border border-white/10 bg-slate-950/40">
+        <table class="min-w-full text-sm">
+          <thead class="border-b border-white/10 bg-slate-950/60">
+            <tr>
+              <th class="text-left p-3">{% trans "Fecha" %}</th>
+              <th class="text-left p-3">{% trans "Tipo" %}</th>
+              <th class="text-left p-3">{% trans "Descripción" %}</th>
+              <th class="text-right p-3">{% trans "Monto (original)" %}</th>
+              <th class="text-right p-3">{% trans "CLP base" %}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for t in recent %}
+              <tr class="border-b border-white/5">
+                <td class="p-3 text-slate-300">{{ t.occurred_at|date:"Y-m-d H:i" }}</td>
+
+                <td class="p-3">
+                  {% if t.kind == "expense" %}
+                    <span class="px-2 py-1 rounded-lg bg-rose-500/15 border border-rose-500/30">🧾 {% trans "Gasto" %}</span>
+                  {% else %}
+                    <span class="px-2 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30">💰 {% trans "Ingreso" %}</span>
+                  {% endif %}
+                </td>
+
+                <td class="p-3 text-slate-200">{{ t.description|default:"—" }}</td>
+
+                <td class="p-3 text-right font-semibold">
+                  {{ t.amount_original|money:t.currency_original }}
+                  <span class="text-slate-300 font-normal">{{ t.currency_original }}</span>
+                </td>
+
+                <td class="p-3 text-right font-semibold">
+                  {{ t.amount_clp|money:"CLP" }}
+                  <span class="text-slate-300 font-normal">CLP</span>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="5" class="p-4 text-slate-300">
+                  {% trans "Aún no tienes movimientos. Prueba desde Telegram:" %}
+                  <span class="font-mono">Gasto 3200 Uber</span>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="space-y-6">
+    <div class="rounded-3xl border border-white/10 bg-white/5 p-6">
+      <h3 class="font-semibold mb-2">{% trans "Acciones rápidas" %}</h3>
+
+      <div class="grid gap-3">
+        <!-- ✅ NUEVO: Budgets -->
+        <a href="{% url 'budgets:list' %}"
+           class="rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-3 text-sm">
+          🎯 {% trans "Presupuestos" %}
+        </a>
+
+        <a href="{% url 'accounts:profile' %}"
+           class="rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-3 text-sm">
+          ⚙️ {% trans "Configurar moneda / idioma" %}
+        </a>
+
+        <a href="{% url 'accounts:telegram_link' %}"
+           class="rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 px-4 py-3 text-sm">
+          🔗 {% trans "Vincular Telegram" %}
+        </a>
+      </div>
+    </div>
+
+    <div class="rounded-3xl border border-white/10 bg-white/5 p-6">
+      <h3 class="font-semibold mb-2">{% trans "Estado" %}</h3>
+      <p class="text-sm text-slate-300">{% trans "MVP en construcción." %}</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

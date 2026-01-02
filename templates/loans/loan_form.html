@@ -1,0 +1,91 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Nuevo préstamo" %} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl space-y-6">
+
+  <div>
+    <h1 class="text-2xl font-semibold">➕ {% trans "Nuevo préstamo" %}</h1>
+    <p class="text-slate-300 text-sm">{% trans "Crea el préstamo y se generan las cuotas automáticamente." %}</p>
+  </div>
+
+  <form method="post" class="rounded-3xl border border-white/10 bg-white/5 p-6 space-y-4">
+    {% csrf_token %}
+
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Dirección" %}</label>
+        <select name="direction" class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+          <option value="lent">{% trans "Presté (me deben)" %}</option>
+          <option value="borrowed">{% trans "Me prestaron (yo debo)" %}</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Persona" %}</label>
+        <input name="person_name" class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm"
+               placeholder="{% trans 'Rosa, Juan...' %}" required>
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Moneda" %}</label>
+        <select name="currency_original" class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+          <option value="CLP">CLP</option>
+          <option value="USD">USD</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Monto" %}</label>
+        <input name="principal_original" class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm"
+               placeholder="{% trans 'Ej: 450.000 o 200' %}" required>
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-3 gap-3">
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Cuotas" %}</label>
+        <input type="number" name="installments_count" min="1" max="120"
+               class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm" value="1" required>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Frecuencia" %}</label>
+        <select name="frequency" class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+          <option value="monthly">{% trans "Mensual" %}</option>
+          <option value="weekly">{% trans "Semanal" %}</option>
+          <option value="biweekly">{% trans "Quincenal" %}</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-300">{% trans "1er vencimiento" %}</label>
+        <input type="date" name="first_due_date"
+               class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+      </div>
+    </div>
+
+    <div>
+      <label class="text-xs text-slate-300">{% trans "Nota" %}</label>
+      <textarea name="note" rows="3"
+                class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm"
+                placeholder="{% trans 'Opcional...' %}"></textarea>
+    </div>
+
+    <div class="flex gap-2">
+      <button class="rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm">
+        {% trans "Crear" %} ✅
+      </button>
+      <a href="{% url 'loans:list' %}"
+         class="rounded-2xl border border-white/10 bg-transparent hover:bg-white/5 px-4 py-2 text-sm">
+        {% trans "Volver" %}
+      </a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

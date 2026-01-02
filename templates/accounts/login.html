@@ -1,0 +1,69 @@
+{% extends "layouts/base_public.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Iniciar sesión" %} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="grid lg:grid-cols-2 gap-6 items-stretch">
+  <div class="rounded-3xl border border-white/10 bg-white/5 p-8">
+    <h1 class="text-3xl font-semibold mb-2">{% trans "Iniciar sesión" %}</h1>
+    <p class="text-slate-300 mb-8">{% trans "Accede a tu panel para registrar gastos, presupuestos y tarjetas." %}</p>
+
+    {# Mensajes Django #}
+    {% if messages %}
+      <div class="space-y-2 mb-4">
+        {% for message in messages %}
+          <div class="rounded-2xl px-4 py-3 text-sm border border-white/10
+                      {% if message.tags == 'success' %}bg-emerald-500/10 text-emerald-200
+                      {% elif message.tags == 'error' %}bg-rose-500/10 text-rose-200
+                      {% elif message.tags == 'warning' %}bg-amber-500/10 text-amber-200
+                      {% else %}bg-white/5 text-slate-200{% endif %}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'accounts:login' %}" class="space-y-4">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next|default:'' }}">
+
+      <div class="space-y-2">
+        <label class="text-sm text-slate-300">{% trans "Usuario o Email" %}</label>
+        <input name="username" autocomplete="username" required
+               class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20"
+               placeholder="luisgil o luis@correo.com"
+               value="{{ request.POST.username|default:'' }}">
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-sm text-slate-300">{% trans "Contraseña" %}</label>
+        <input type="password" name="password" autocomplete="current-password" required
+               class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20"
+               placeholder="••••••••">
+      </div>
+
+      <button type="submit"
+              class="w-full rounded-2xl px-4 py-3 bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 font-semibold">
+        {% trans "Entrar" %}
+      </button>
+    </form>
+
+    <div class="mt-6 text-sm text-slate-300">
+      {% trans "¿No tienes cuenta?" %}
+      <a class="underline hover:text-white" href="{% url 'accounts:signup' %}">{% trans "Crear cuenta" %}</a>
+    </div>
+  </div>
+
+  <div class="rounded-3xl border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-8">
+    <div class="text-sm text-slate-300 mb-2">{% trans "Lo que podrás hacer" %}</div>
+    <ul class="space-y-3 text-slate-200">
+      <li class="flex gap-3"><span>✅</span><span>{% trans "Registrar gastos e ingresos por bot o web" %}</span></li>
+      <li class="flex gap-3"><span>✅</span><span>{% trans "Presupuestos por categoría con alertas" %}</span></li>
+      <li class="flex gap-3"><span>✅</span><span>{% trans "Tarjetas con cupo disponible y ciclo de facturación" %}</span></li>
+      <li class="flex gap-3"><span>✅</span><span>{% trans "Préstamos: quién te debe, cuotas y recordatorios" %}</span></li>
+      <li class="flex gap-3"><span>✅</span><span>{% trans "Gráficos y análisis (Pro)" %}</span></li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

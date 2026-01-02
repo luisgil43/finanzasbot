@@ -1,0 +1,979 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: finanzas-bot 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-22 11:23-0300\n"
+"PO-Revision-Date: 2025-12-22 11:30-0300\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: budgets/models.py:35
+msgid "Palabras clave separadas por coma para estimar gasto por descripción."
+msgstr "Comma-separated keywords to estimate spending from the description."
+
+#: budgets/models.py:42
+msgid "Budget category"
+msgstr "Budget category"
+
+#: budgets/models.py:43
+msgid "Budget categories"
+msgstr "Budget categories"
+
+#: budgets/models.py:74
+msgid "Monthly budget"
+msgstr "Monthly budget"
+
+#: budgets/models.py:75
+msgid "Monthly budgets"
+msgstr "Monthly budgets"
+
+#: budgets/views.py:161 budgets/views.py:214
+msgid "Selecciona una categoría válida."
+msgstr "Select a valid category."
+
+#: budgets/views.py:171 budgets/views.py:225 cards/forms.py:46 transactions/views.py:100
+msgid "Monto inválido."
+msgstr "Invalid amount."
+
+#: budgets/views.py:190
+msgid "Presupuesto guardado ✅"
+msgstr "Budget saved ✅"
+
+#: budgets/views.py:240
+msgid "Presupuesto actualizado ✅"
+msgstr "Budget updated ✅"
+
+#: budgets/views.py:264
+msgid "Presupuesto eliminado 🗑️"
+msgstr "Budget deleted 🗑️"
+
+#: budgets/views.py:278 budgets/views.py:308
+msgid "Nombre de categoría requerido."
+msgstr "Category name is required."
+
+#: budgets/views.py:291 budgets/views.py:324
+msgid "Categoría actualizada ✅"
+msgstr "Category updated ✅"
+
+#: budgets/views.py:293 budgets/views.py:317
+msgid "La categoría ya existe."
+msgstr "Category already exists."
+
+#: budgets/views.py:295
+msgid "Categoría creada ✅"
+msgstr "Category created ✅"
+
+#: cards/forms.py:24
+msgid "Ej: 800.000"
+msgstr "e.g. 800,000"
+
+#: cards/forms.py:33
+msgid "Últimos 4 debe ser un número de 4 dígitos."
+msgstr "Last 4 must be a 4-digit number."
+
+#: cards/models.py:18 templates/owner/login.html:20 templates/owner/staff.html:26 templates/owner/staff.html:105 templates/owner/staff.html:253
+msgid "Usuario"
+msgstr "User"
+
+#: cards/models.py:21 templates/budgets/budget_list.html:149 templates/budgets/category_form.html:18 templates/cards/card_form.html:29
+msgid "Nombre"
+msgstr "Name"
+
+#: cards/models.py:22 templates/cards/card_form.html:34
+msgid "Banco"
+msgstr "Bank"
+
+#: cards/models.py:23 templates/cards/card_form.html:39
+msgid "Marca"
+msgstr "Brand"
+
+#: cards/models.py:24 templates/cards/card_form.html:44
+msgid "Últimos 4"
+msgstr "Last 4"
+
+#: cards/models.py:26 templates/accounts/profile.html:16 templates/cards/card_form.html:52 templates/loans/create.html:35 templates/loans/loan_form.html:35 templates/transactions/create.html:27 templates/transactions/transaction_form.html:27 templates/transactions/transaction_list.html:36
+msgid "Moneda"
+msgstr "Currency"
+
+#: cards/models.py:28 templates/cards/card_detail.html:31 templates/cards/card_form.html:57
+msgid "Límite / cupo"
+msgstr "Limit / credit"
+
+#: cards/models.py:35 templates/cards/card_form.html:70
+msgid "Día de corte"
+msgstr "Statement day"
+
+#: cards/models.py:37
+msgid "Día del mes en que inicia el ciclo (corte). Ej: 5, 10, 25."
+msgstr "Day of the month when the cycle starts (statement). e.g. 5, 10, 25."
+
+#: cards/models.py:40 templates/cards/card_form.html:76
+msgid "Día de pago"
+msgstr "Payment due day"
+
+#: cards/models.py:42
+msgid "Día del mes en que pagas la tarjeta. Ej: 1, 15, 28."
+msgstr "Day of the month when you pay the card. e.g. 1, 15, 28."
+
+#: cards/models.py:45 templates/cards/card_form.html:63
+msgid "Activa"
+msgstr "Active"
+
+#: cards/models.py:47
+msgid "Creada"
+msgstr "Created"
+
+#: cards/models.py:48
+msgid "Actualizada"
+msgstr "Updated"
+
+# -------------------------------------------------------------------
+# CARDS
+# -------------------------------------------------------------------
+#: cards/models.py:51 templates/cards/card_detail.html:5 templates/cards/card_list.html:43 transactions/models.py:61
+msgid "Tarjeta"
+msgstr "Card"
+
+#: cards/models.py:52 templates/cards/card_list.html:5 templates/cards/card_list.html:12 templates/layouts/base_app.html:51
+msgid "Tarjetas"
+msgstr "Cards"
+
+#: cards/views.py:121
+msgid "Tarjeta creada ✅"
+msgstr "Card created ✅"
+
+#: cards/views.py:140
+msgid "Tarjeta actualizada ✅"
+msgstr "Card updated ✅"
+
+#: cards/views.py:157
+msgid "Tarjeta eliminada 🗑️"
+msgstr "Card deleted 🗑️"
+
+#: config/settings/base.py:167
+msgid "Español"
+msgstr "Spanish"
+
+#: config/settings/base.py:168
+msgid "English"
+msgstr "English"
+
+#: templates/accounts/dashboard.html:5 templates/layouts/base_app.html:30
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: templates/accounts/dashboard.html:12
+msgid "Resumen del mes"
+msgstr "Monthly summary"
+
+#: templates/accounts/dashboard.html:13
+msgid "Totales del mes en base a tus transacciones (web y Telegram)."
+msgstr "Monthly totals based on your transactions (web and Telegram)."
+
+#: templates/accounts/dashboard.html:19
+msgid "Gasto mes"
+msgstr "Monthly expense"
+
+#: templates/accounts/dashboard.html:35
+msgid "Ingreso mes"
+msgstr "Monthly income"
+
+#: templates/accounts/dashboard.html:51
+msgid "Balance"
+msgstr "Balance"
+
+#: templates/accounts/dashboard.html:69
+msgid "Actividad reciente"
+msgstr "Recent activity"
+
+#: templates/accounts/dashboard.html:70
+msgid "Últimos movimientos registrados."
+msgstr "Latest recorded transactions."
+
+#: templates/accounts/dashboard.html:76 templates/transactions/transaction_list.html:80
+msgid "Fecha"
+msgstr "Date"
+
+#: templates/accounts/dashboard.html:77 templates/transactions/create.html:19 templates/transactions/transaction_form.html:19 templates/transactions/transaction_list.html:27 templates/transactions/transaction_list.html:81
+msgid "Tipo"
+msgstr "Type"
+
+#: templates/accounts/dashboard.html:78 templates/transactions/create.html:51 templates/transactions/transaction_form.html:51 templates/transactions/transaction_list.html:82
+msgid "Descripción"
+msgstr "Description"
+
+#: templates/accounts/dashboard.html:79
+msgid "Monto (original)"
+msgstr "Amount (original)"
+
+#: templates/accounts/dashboard.html:80 templates/transactions/transaction_list.html:84
+msgid "CLP base"
+msgstr "Base CLP"
+
+#: templates/accounts/dashboard.html:90 templates/transactions/create.html:21 templates/transactions/transaction_form.html:21 templates/transactions/transaction_list.html:30 templates/transactions/transaction_list.html:95 transactions/models.py:16
+msgid "Gasto"
+msgstr "Expense"
+
+#: templates/accounts/dashboard.html:92 templates/transactions/create.html:22 templates/transactions/transaction_form.html:22 templates/transactions/transaction_list.html:31 templates/transactions/transaction_list.html:97 transactions/models.py:17
+msgid "Ingreso"
+msgstr "Income"
+
+#: templates/accounts/dashboard.html:111
+msgid "Aún no tienes movimientos. Prueba desde Telegram:"
+msgstr "You don't have any transactions yet. Try from Telegram:"
+
+#: templates/accounts/dashboard.html:125
+msgid "Acciones rápidas"
+msgstr "Quick actions"
+
+#: templates/accounts/dashboard.html:131 templates/budgets/budget_list.html:5 templates/budgets/budget_list.html:12 templates/layouts/base_app.html:59
+msgid "Presupuestos"
+msgstr "Budgets"
+
+#: templates/accounts/dashboard.html:136
+msgid "Configurar moneda / idioma"
+msgstr "Set currency / language"
+
+#: templates/accounts/dashboard.html:141 templates/accounts/telegram_link.html:4 templates/accounts/telegram_link.html:9 templates/layouts/base_app.html:70
+msgid "Vincular Telegram"
+msgstr "Link Telegram"
+
+#: templates/accounts/dashboard.html:147 templates/budgets/budget_list.html:61 templates/loans/loan_detail.html:56 templates/loans/loan_detail.html:76 templates/loans/loan_list.html:25 templates/loans/loan_list.html:52
+msgid "Estado"
+msgstr "Status"
+
+#: templates/accounts/dashboard.html:148
+msgid "MVP en construcción."
+msgstr "MVP in progress."
+
+#: templates/accounts/login.html:4 templates/accounts/login.html:9 templates/accounts/signup.html:26
+msgid "Iniciar sesión"
+msgstr "Log in"
+
+#: templates/accounts/login.html:10
+msgid "Accede a tu panel para registrar gastos, presupuestos y tarjetas."
+msgstr "Go to your dashboard to track expenses, budgets, and cards."
+
+#: templates/accounts/login.html:32
+msgid "Usuario o Email"
+msgstr "Username or Email"
+
+#: templates/accounts/login.html:40 templates/owner/login.html:26 templates/owner/staff.html:267
+msgid "Contraseña"
+msgstr "Password"
+
+#: templates/accounts/login.html:48
+msgid "Entrar"
+msgstr "Sign in"
+
+#: templates/accounts/login.html:53
+msgid "¿No tienes cuenta?"
+msgstr "Don't have an account?"
+
+#: templates/accounts/login.html:54 templates/accounts/signup.html:4 templates/accounts/signup.html:9
+msgid "Crear cuenta"
+msgstr "Create account"
+
+#: templates/accounts/login.html:59
+msgid "Lo que podrás hacer"
+msgstr "What you can do"
+
+#: templates/accounts/login.html:61
+msgid "Registrar gastos e ingresos por bot o web"
+msgstr "Record expenses and income via bot or web"
+
+#: templates/accounts/login.html:62
+msgid "Presupuestos por categoría con alertas"
+msgstr "Budgets by category with alerts"
+
+#: templates/accounts/login.html:63
+msgid "Tarjetas con cupo disponible y ciclo de facturación"
+msgstr "Cards with available credit and billing cycle"
+
+#: templates/accounts/login.html:64
+msgid "Préstamos: quién te debe, cuotas y recordatorios"
+msgstr "Loans: who owes you, installments, and reminders"
+
+#: templates/accounts/login.html:65
+msgid "Gráficos y análisis (Pro)"
+msgstr "Charts & analytics (Pro)"
+
+#: templates/accounts/profile.html:4 templates/accounts/profile.html:9 templates/layouts/base_app.html:65
+msgid "Mi perfil"
+msgstr "My profile"
+
+#: templates/accounts/profile.html:10
+msgid "Configura tu moneda e idioma preferido."
+msgstr "Set your preferred currency and language."
+
+#: templates/accounts/profile.html:25
+msgid "Idioma"
+msgstr "Language"
+
+#: templates/accounts/profile.html:34 templates/owner/staff.html:172
+msgid "Guardar cambios"
+msgstr "Save changes"
+
+#: templates/accounts/signup.html:10
+msgid "Te enviaremos un link para verificar tu correo."
+msgstr "We'll send you a link to verify your email."
+
+#: templates/accounts/signup.html:20
+msgid "Registrarme"
+msgstr "Sign up"
+
+#: templates/accounts/signup.html:25
+msgid "¿Ya tienes cuenta?"
+msgstr "Already have an account?"
+
+#: templates/accounts/signup_done.html:4
+msgid "Verifica tu correo"
+msgstr "Verify your email"
+
+#: templates/accounts/signup_done.html:9
+msgid "Revisa tu correo"
+msgstr "Check your email"
+
+#: templates/accounts/signup_done.html:11
+msgid "Te enviamos un enlace de verificación a"
+msgstr "We sent a verification link to"
+
+#: templates/accounts/signup_done.html:18
+msgid "Volver al login"
+msgstr "Back to login"
+
+#: templates/accounts/telegram_link.html:11
+msgid "Abre este enlace, presiona START y quedará vinculado tu usuario."
+msgstr "Open this link, tap START, and your account will be linked."
+
+#: templates/accounts/telegram_link.html:16
+msgid "Abrir Telegram"
+msgstr "Open Telegram"
+
+#: templates/accounts/telegram_link.html:20
+msgid "Deep link"
+msgstr "Deep link"
+
+#: templates/accounts/telegram_link.html:22
+msgid "Código"
+msgstr "Code"
+
+#: templates/budgets/budget_form.html:5 templates/budgets/budget_form.html:14
+msgid "Editar presupuesto"
+msgstr "Edit budget"
+
+#: templates/budgets/budget_form.html:5 templates/budgets/budget_form.html:14 templates/budgets/budget_list.html:18
+msgid "Nuevo presupuesto"
+msgstr "New budget"
+
+#: templates/budgets/budget_form.html:16
+msgid "Define un monto mensual por categoría (CLP)."
+msgstr "Define a monthly amount per category (CLP)."
+
+#: templates/budgets/budget_form.html:24 templates/budgets/budget_list.html:26
+msgid "Mes"
+msgstr "Month"
+
+#: templates/budgets/budget_form.html:30 templates/budgets/budget_list.html:57
+msgid "Categoría"
+msgstr "Category"
+
+#: templates/budgets/budget_form.html:33
+msgid "Selecciona..."
+msgstr "Select..."
+
+#: templates/budgets/budget_form.html:46
+msgid "Monto (CLP)"
+msgstr "Amount (CLP)"
+
+#: templates/budgets/budget_form.html:48
+msgid "Ej: 450.000"
+msgstr "e.g. 450,000"
+
+#: templates/budgets/budget_form.html:50 templates/transactions/create.html:40 templates/transactions/transaction_form.html:40
+msgid "Tip: puedes escribir con puntos de miles."
+msgstr "Tip: you can use thousands separators."
+
+#: templates/budgets/budget_form.html:54 templates/loans/create.html:73 templates/loans/loan_form.html:73
+msgid "Nota"
+msgstr "Note"
+
+#: templates/budgets/budget_form.html:56 templates/loans/create.html:76 templates/loans/loan_form.html:76
+msgid "Opcional..."
+msgstr "Optional..."
+
+#: templates/budgets/budget_form.html:63 templates/budgets/budget_list.html:161 templates/budgets/category_form.html:35 templates/cards/card_form.html:85 templates/transactions/create.html:58 templates/transactions/transaction_form.html:58
+msgid "Guardar"
+msgstr "Save"
+
+#: templates/budgets/budget_form.html:68 templates/budgets/category_form.html:40 templates/cards/card_detail.html:24 templates/cards/card_form.html:89 templates/loans/create.html:85 templates/loans/loan_detail.html:24 templates/loans/loan_form.html:85 templates/transactions/create.html:62 templates/transactions/transaction_form.html:62
+msgid "Volver"
+msgstr "Back"
+
+#: templates/budgets/budget_list.html:13
+msgid "Control mensual por categoría (estimado por palabras clave en tus movimientos)."
+msgstr "Monthly control by category (estimated from keywords in your transactions)."
+
+#: templates/budgets/budget_list.html:32 templates/layouts/base_app.html:114 templates/layouts/base_owner.html:81 templates/layouts/base_public.html:36
+msgid "Aplicar"
+msgstr "Apply"
+
+#: templates/budgets/budget_list.html:37
+msgid "Total presupuesto"
+msgstr "Total budget"
+
+#: templates/budgets/budget_list.html:41
+msgid "Gastado (estimado)"
+msgstr "Spent (estimated)"
+
+#: templates/budgets/budget_list.html:45 templates/budgets/budget_list.html:60
+msgid "Restante"
+msgstr "Remaining"
+
+#: templates/budgets/budget_list.html:58
+msgid "Presupuesto"
+msgstr "Budget"
+
+#: templates/budgets/budget_list.html:59
+msgid "Gastado"
+msgstr "Spent"
+
+#: templates/budgets/budget_list.html:62 templates/cards/card_list.html:48 templates/owner/staff.html:31 templates/transactions/transaction_list.html:85
+msgid "Acciones"
+msgstr "Actions"
+
+#: templates/budgets/budget_list.html:76 templates/budgets/category_form.html:4 templates/budgets/category_form.html:10
+msgid "Editar categoría"
+msgstr "Edit category"
+
+#: templates/budgets/budget_list.html:81
+msgid "Keywords:"
+msgstr "Keywords:"
+
+#: templates/budgets/budget_list.html:83
+msgid "Sin keywords (gastado = 0)"
+msgstr "No keywords (spent = 0)"
+
+#: templates/budgets/budget_list.html:104
+msgid "Excedido"
+msgstr "Over"
+
+#: templates/budgets/budget_list.html:106
+msgid "Cerca"
+msgstr "Near"
+
+#: templates/budgets/budget_list.html:108
+msgid "OK"
+msgstr "OK"
+
+#: templates/budgets/budget_list.html:116 templates/cards/card_detail.html:21 templates/cards/card_list.html:88 templates/owner/staff.html:67
+msgid "Editar"
+msgstr "Edit"
+
+#: templates/budgets/budget_list.html:121
+msgid "¿Eliminar este presupuesto?"
+msgstr "Delete this budget?"
+
+#: templates/budgets/budget_list.html:122 templates/cards/card_list.html:93 templates/owner/staff.html:73
+msgid "Eliminar"
+msgstr "Delete"
+
+#: templates/budgets/budget_list.html:128 templates/loans/create.html:81 templates/loans/loan_form.html:81 templates/owner/staff.html:316
+msgid "Crear"
+msgstr "Create"
+
+#: templates/budgets/budget_list.html:134
+msgid "No hay categorías aún."
+msgstr "No categories yet."
+
+#: templates/budgets/budget_list.html:143
+msgid "Crear categoría"
+msgstr "Create category"
+
+#: templates/budgets/budget_list.html:150
+msgid "Ej: Comida"
+msgstr "e.g. Food"
+
+#: templates/budgets/budget_list.html:155 templates/budgets/category_form.html:24
+msgid "Keywords (coma)"
+msgstr "Keywords (comma)"
+
+#: templates/budgets/budget_list.html:156 templates/budgets/category_form.html:26
+msgid "ej: uber, bencina, supermercado"
+msgstr "e.g. uber, gas, supermarket"
+
+#: templates/budgets/budget_list.html:166
+msgid "TIP MVP: el gasto se estima por descripción. Si quieres precisión total, luego agregamos campo categoría en Transaction."
+msgstr "MVP TIP: spending is estimated by description. For full accuracy, we'll later add a category field to Transaction."
+
+#: templates/budgets/category_form.html:11
+msgid "Edita el nombre y las keywords separadas por coma."
+msgstr "Edit the name and comma-separated keywords."
+
+#: templates/budgets/category_form.html:29
+msgid "Ejemplo: uber eats, rappi, restaurant, cafeteria"
+msgstr "Example: uber eats, rappi, restaurant, cafe"
+
+#: templates/cards/card_detail.html:35 templates/cards/card_list.html:29
+msgid "Usado (ciclo actual)"
+msgstr "Used (current cycle)"
+
+#: templates/cards/card_detail.html:39 templates/cards/card_list.html:33
+msgid "Disponible estimado"
+msgstr "Estimated available"
+
+#: templates/cards/card_detail.html:45 templates/cards/card_list.html:81
+msgid "Ciclo actual"
+msgstr "Current cycle"
+
+#: templates/cards/card_detail.html:47 templates/cards/card_list.html:83
+msgid "Corte"
+msgstr "Statement"
+
+#: templates/cards/card_detail.html:47 templates/cards/card_list.html:83
+msgid "Pago"
+msgstr "Payment"
+
+#: templates/cards/card_form.html:5 templates/cards/card_form.html:13
+msgid "Editar tarjeta"
+msgstr "Edit card"
+
+#: templates/cards/card_form.html:5 templates/cards/card_form.html:13 templates/cards/card_list.html:18
+msgid "Nueva tarjeta"
+msgstr "New card"
+
+#: templates/cards/card_form.html:15
+msgid "Configura cupo y ciclo (corte/pago). Luego podrás asociar gastos a esta tarjeta."
+msgstr "Set the limit and cycle (statement/payment). Then you can link expenses to this card."
+
+#: templates/cards/card_form.html:72
+msgid "Ej: 5, 10, 25"
+msgstr "e.g. 5, 10, 25"
+
+#: templates/cards/card_form.html:78
+msgid "Ej: 1, 15, 28"
+msgstr "e.g. 1, 15, 28"
+
+#: templates/cards/card_list.html:13
+msgid "Controla cupo, ciclo de facturación y disponible estimado."
+msgstr "Track your limit, billing cycle, and estimated available balance."
+
+#: templates/cards/card_list.html:25
+msgid "Cupo total"
+msgstr "Total limit"
+
+#: templates/cards/card_list.html:44
+msgid "Límite"
+msgstr "Limit"
+
+#: templates/cards/card_list.html:45
+msgid "Usado"
+msgstr "Used"
+
+#: templates/cards/card_list.html:46
+msgid "Disponible"
+msgstr "Available"
+
+#: templates/cards/card_list.html:47
+msgid "Ciclo"
+msgstr "Cycle"
+
+#: templates/cards/card_list.html:64
+msgid "Inactiva"
+msgstr "Inactive"
+
+#: templates/cards/card_list.html:92
+msgid "¿Eliminar esta tarjeta?"
+msgstr "Delete this card?"
+
+#: templates/cards/card_list.html:101
+msgid "No hay tarjetas aún."
+msgstr "No cards yet."
+
+#: templates/layouts/base_app.html:22
+msgid "Panel de Usuario"
+msgstr "User dashboard"
+
+#: templates/layouts/base_app.html:37 templates/transactions/transaction_list.html:5 templates/transactions/transaction_list.html:12
+msgid "Movimientos"
+msgstr "Transactions"
+
+#: templates/layouts/base_app.html:44 templates/loans/loan_list.html:5 templates/loans/loan_list.html:12
+msgid "Préstamos"
+msgstr "Loans"
+
+#: templates/layouts/base_app.html:88
+msgid "Salir"
+msgstr "Log out"
+
+#: templates/layouts/base_app.html:100
+msgid "Bienvenido"
+msgstr "Welcome"
+
+#: templates/layouts/base_app.html:149
+msgid "Confirmar acción"
+msgstr "Confirm action"
+
+#: templates/layouts/base_app.html:158 templates/owner/staff.html:169 templates/owner/staff.html:212 templates/owner/staff.html:313
+msgid "Cancelar"
+msgstr "Cancel"
+
+#: templates/layouts/base_app.html:164
+msgid "Aceptar"
+msgstr "Accept"
+
+#: templates/layouts/base_owner.html:22
+msgid "Panel interno"
+msgstr "Internal panel"
+
+#: templates/layouts/base_owner.html:30
+msgid "Inicio"
+msgstr "Home"
+
+#: templates/layouts/base_owner.html:35
+msgid "Clientes"
+msgstr "Clients"
+
+#: templates/layouts/base_owner.html:40 templates/owner/staff.html:90 templates/owner/staff.html:239
+msgid "Staff"
+msgstr "Staff"
+
+#: templates/layouts/base_owner.html:46
+msgid "Volver al panel usuario"
+msgstr "Back to user dashboard"
+
+#: templates/layouts/base_owner.html:55
+msgid "Salir (Owner)"
+msgstr "Log out (Owner)"
+
+#: templates/layouts/base_owner.html:67 templates/owner/staff.html:8
+msgid "Owner Admin"
+msgstr "Owner Admin"
+
+#: templates/loans/create.html:4 templates/loans/create.html:10 templates/loans/loan_form.html:4 templates/loans/loan_form.html:10 templates/loans/loan_list.html:18
+msgid "Nuevo préstamo"
+msgstr "New loan"
+
+#: templates/loans/create.html:11 templates/loans/loan_form.html:11
+msgid "Crea el préstamo y se generan las cuotas automáticamente."
+msgstr "Create the loan and installments are generated automatically."
+
+#: templates/loans/create.html:19 templates/loans/loan_form.html:19 templates/loans/loan_list.html:49
+msgid "Dirección"
+msgstr "Loan type"
+
+#: templates/loans/create.html:21 templates/loans/loan_detail.html:16 templates/loans/loan_form.html:21 templates/loans/loan_list.html:62
+msgid "Presté (me deben)"
+msgstr "I lent (they owe me)"
+
+#: templates/loans/create.html:22 templates/loans/loan_detail.html:18 templates/loans/loan_form.html:22 templates/loans/loan_list.html:64
+msgid "Me prestaron (yo debo)"
+msgstr "I borrowed (I owe)"
+
+#: templates/loans/create.html:27 templates/loans/loan_form.html:27 templates/loans/loan_list.html:48
+msgid "Persona"
+msgstr "Person"
+
+#: templates/loans/create.html:29 templates/loans/loan_form.html:29
+msgid "Rosa, Juan..."
+msgstr "Rosa, John..."
+
+#: templates/loans/create.html:43 templates/loans/loan_detail.html:40 templates/loans/loan_detail.html:75 templates/loans/loan_form.html:43 templates/loans/loan_list.html:50 templates/transactions/create.html:37 templates/transactions/transaction_form.html:37
+msgid "Monto"
+msgstr "Amount"
+
+#: templates/loans/create.html:45 templates/loans/loan_form.html:45
+msgid "Ej: 450.000 o 200"
+msgstr "e.g., 450,000 or 200"
+
+#: templates/loans/create.html:51 templates/loans/loan_detail.html:50 templates/loans/loan_form.html:51 templates/loans/loan_list.html:51
+msgid "Cuotas"
+msgstr "Installments"
+
+#: templates/loans/create.html:57 templates/loans/loan_form.html:57
+msgid "Frecuencia"
+msgstr "Frequency"
+
+#: templates/loans/create.html:59 templates/loans/loan_form.html:59
+msgid "Mensual"
+msgstr "Monthly"
+
+#: templates/loans/create.html:60 templates/loans/loan_form.html:60
+msgid "Semanal"
+msgstr "Weekly"
+
+#: templates/loans/create.html:61 templates/loans/loan_form.html:61
+msgid "Quincenal"
+msgstr "Biweekly"
+
+#: templates/loans/create.html:66 templates/loans/loan_form.html:66
+msgid "1er vencimiento"
+msgstr "First due date"
+
+#: templates/loans/loan_detail.html:5 templates/loans/loan_detail.html:12
+msgid "Préstamo"
+msgstr "Loan"
+
+#: templates/loans/loan_detail.html:30
+msgid "¿Cerrar este préstamo?"
+msgstr "Close this loan?"
+
+#: templates/loans/loan_detail.html:31
+msgid "Cerrar"
+msgstr "Close"
+
+#: templates/loans/loan_detail.html:52
+msgid "1er venc:"
+msgstr "First due:"
+
+#: templates/loans/loan_detail.html:59 templates/loans/loan_list.html:28 templates/loans/loan_list.html:77 templates/owner/staff.html:28
+msgid "Activo"
+msgstr "Active"
+
+#: templates/loans/loan_detail.html:61 templates/loans/loan_list.html:29 templates/loans/loan_list.html:79
+msgid "Cerrado"
+msgstr "Closed"
+
+#: templates/loans/loan_detail.html:63 templates/loans/loan_list.html:30 templates/loans/loan_list.html:81
+msgid "Cancelado"
+msgstr "Canceled"
+
+#: templates/loans/loan_detail.html:74
+msgid "Vence"
+msgstr "Due"
+
+#: templates/loans/loan_detail.html:77
+msgid "Acción"
+msgstr "Action"
+
+#: templates/loans/loan_detail.html:95
+msgid "Pagada"
+msgstr "Paid"
+
+#: templates/loans/loan_detail.html:97
+msgid "Atrasada"
+msgstr "Overdue"
+
+#: templates/loans/loan_detail.html:99
+msgid "Pendiente"
+msgstr "Pending"
+
+#: templates/loans/loan_detail.html:108
+#, python-format
+msgid "¿Marcar cuota #%(n)s como pagada?"
+msgstr "Mark installment #%(n)s as paid?"
+
+#: templates/loans/loan_detail.html:109
+msgid "Pagar"
+msgstr "Pay"
+
+#: templates/loans/loan_list.html:13
+msgid "Control de préstamos y cuotas."
+msgstr "Loan and installment tracking."
+
+#: templates/loans/loan_list.html:27 templates/transactions/transaction_list.html:29
+msgid "Todos"
+msgstr "All"
+
+#: templates/loans/loan_list.html:35 templates/transactions/transaction_list.html:66
+msgid "Filtrar"
+msgstr "Filter"
+
+#: templates/loans/loan_list.html:39 templates/transactions/transaction_list.html:70
+msgid "Limpiar"
+msgstr "Clear"
+
+#: templates/loans/loan_list.html:85
+msgid "Ver"
+msgstr "View"
+
+#: templates/loans/loan_list.html:89
+msgid "Aún no tienes préstamos."
+msgstr "You don't have any loans yet."
+
+#: templates/owner/staff.html:9
+msgid "Staff (Soporte / Finanzas / Admin General)"
+msgstr "Staff (Support / Finance / General Admin)"
+
+#: templates/owner/staff.html:10
+msgid "Estos NO son usuarios suscritos, son usuarios internos."
+msgstr "These are NOT subscribed users; they are internal users."
+
+#: templates/owner/staff.html:17
+msgid "Crear Staff"
+msgstr "Create Staff"
+
+#: templates/owner/staff.html:27 templates/owner/staff.html:111 templates/owner/staff.html:259
+msgid "Email"
+msgstr "Email"
+
+#: templates/owner/staff.html:29
+msgid "Telegram"
+msgstr "Telegram"
+
+#: templates/owner/staff.html:30 templates/owner/staff.html:139 templates/owner/staff.html:286
+msgid "Roles"
+msgstr "Roles"
+
+#: templates/owner/staff.html:77
+msgid "Solo Admin General puede modificar."
+msgstr "Only General Admin can edit."
+
+#: templates/owner/staff.html:91
+msgid "Editar usuario interno"
+msgstr "Edit internal user"
+
+#: templates/owner/staff.html:119
+msgid "Nueva contraseña"
+msgstr "New password"
+
+#: templates/owner/staff.html:119 templates/owner/staff.html:125
+msgid "opcional"
+msgstr "optional"
+
+#: templates/owner/staff.html:125 templates/owner/staff.html:273
+msgid "Repetir contraseña"
+msgstr "Repeat password"
+
+#: templates/owner/staff.html:135 templates/owner/staff.html:282
+msgid "Usuario activo"
+msgstr "Active user"
+
+#: templates/owner/staff.html:145 templates/owner/staff.html:291
+msgid "Admin General"
+msgstr "General Admin"
+
+#: templates/owner/staff.html:151 templates/owner/staff.html:296
+msgid "Finanzas"
+msgstr "Finance"
+
+#: templates/owner/staff.html:157 templates/owner/staff.html:301
+msgid "Soporte"
+msgstr "Support"
+
+#: templates/owner/staff.html:162
+msgid "Puedes seleccionar más de un rol."
+msgstr "You can select more than one role."
+
+#: templates/owner/staff.html:188
+msgid "Acción peligrosa"
+msgstr "Dangerous action"
+
+#: templates/owner/staff.html:189
+msgid "Eliminar staff"
+msgstr "Delete staff"
+
+#: templates/owner/staff.html:198
+msgid "Vas a eliminar a:"
+msgstr "You're about to delete:"
+
+#: templates/owner/staff.html:202
+msgid "Esta acción no se puede deshacer."
+msgstr "This action can't be undone."
+
+#: templates/owner/staff.html:215
+msgid "Sí, eliminar"
+msgstr "Yes, delete"
+
+#: templates/owner/staff.html:224
+msgid "No hay staff aún."
+msgstr "No staff yet."
+
+#: templates/owner/staff.html:240
+msgid "Crear usuario interno"
+msgstr "Create internal user"
+
+#: templates/owner/staff.html:306
+msgid "Selecciona al menos un rol."
+msgstr "Select at least one role."
+
+#: templates/transactions/create.html:4 templates/transactions/create.html:10 templates/transactions/transaction_form.html:4 templates/transactions/transaction_form.html:10 templates/transactions/transaction_list.html:18
+msgid "Nuevo movimiento"
+msgstr "New transaction"
+
+#: templates/transactions/create.html:11 templates/transactions/transaction_form.html:11
+msgid "Registra manualmente un gasto o ingreso (se normaliza a CLP)."
+msgstr "Record an expense or income manually (normalized to CLP)."
+
+#: templates/transactions/create.html:38 templates/transactions/transaction_form.html:38
+msgid "Ej: 320.240 o 32 USD"
+msgstr "e.g., 320,240 or 32 USD"
+
+#: templates/transactions/create.html:44 templates/transactions/transaction_form.html:44
+msgid "Fecha y hora"
+msgstr "Date and time"
+
+#: templates/transactions/create.html:52 templates/transactions/transaction_form.html:52
+msgid "Uber, Sueldo, Mercado..."
+msgstr "Uber, Salary, Groceries..."
+
+#: templates/transactions/transaction_list.html:13
+msgid "Transacciones registradas (web y Telegram)."
+msgstr "Transactions recorded (web and Telegram)."
+
+#: templates/transactions/transaction_list.html:38
+msgid "Todas"
+msgstr "All"
+
+#: templates/transactions/transaction_list.html:45
+msgid "Desde"
+msgstr "From"
+
+#: templates/transactions/transaction_list.html:51
+msgid "Hasta"
+msgstr "To"
+
+#: templates/transactions/transaction_list.html:57
+msgid "Buscar"
+msgstr "Search"
+
+#: templates/transactions/transaction_list.html:58
+msgid "Uber, sueldo, etc."
+msgstr "Uber, salary, etc."
+
+#: templates/transactions/transaction_list.html:83
+msgid "Original"
+msgstr "Original"
+
+#: templates/transactions/transaction_list.html:117
+msgid "¿Eliminar este movimiento?"
+msgstr "Delete this transaction?"
+
+#: templates/transactions/transaction_list.html:125
+msgid "Aún no tienes movimientos."
+msgstr "You don't have any transactions yet."
+
+#: templates/transactions/transaction_list.html:136
+#, python-format
+msgid "\n          Página %(number)s de %(total)s\n        "
+msgstr "\n          Page %(number)s of %(total)s\n        "
+
+#: transactions/views.py:143
+#, python-format
+msgid "Movimiento creado (ID %(id)s) ✅"
+msgstr "Transaction created (ID %(id)s) ✅"
+
+#: transactions/views.py
+msgid "Tarjeta inválida."
+msgstr "Invalid card."
+
+#: templates/transactions/transaction_form.html
+msgid "Tarjeta (opcional)"
+msgstr "Card (optional)"
+
+#: templates/transactions/transaction_form.html
+msgid "Sin tarjeta"
+msgstr "No card"
+
+#: templates/transactions/transaction_list.html
+msgid "Todas las tarjetas"
+msgstr "All cards"
+
+#: transactions/views.py:154
+msgid "Movimiento eliminado 🗑️"
+msgstr "Transaction deleted 🗑️"

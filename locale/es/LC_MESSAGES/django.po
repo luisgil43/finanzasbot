@@ -1,0 +1,618 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-19 19:06-0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? "
+"1 : 2;\n"
+#: config/settings/base.py:167
+msgid "Español"
+msgstr ""
+
+#: config/settings/base.py:168
+msgid "English"
+msgstr ""
+
+#: templates/accounts/dashboard.html:5 templates/layouts/base_app.html:30
+msgid "Dashboard"
+msgstr ""
+
+#: templates/accounts/dashboard.html:12
+msgid "Resumen del mes"
+msgstr ""
+
+#: templates/accounts/dashboard.html:13
+msgid "Totales del mes en base a tus transacciones (web y Telegram)."
+msgstr ""
+
+#: templates/accounts/dashboard.html:19
+msgid "Gasto mes"
+msgstr ""
+
+#: templates/accounts/dashboard.html:35
+msgid "Ingreso mes"
+msgstr ""
+
+#: templates/accounts/dashboard.html:51
+msgid "Balance"
+msgstr ""
+
+#: templates/accounts/dashboard.html:69
+msgid "Actividad reciente"
+msgstr ""
+
+#: templates/accounts/dashboard.html:70
+msgid "Últimos movimientos registrados."
+msgstr ""
+
+#: templates/accounts/dashboard.html:76
+msgid "Fecha"
+msgstr ""
+
+#: templates/accounts/dashboard.html:77 templates/transactions/create.html:19
+msgid "Tipo"
+msgstr ""
+
+#: templates/accounts/dashboard.html:78 templates/transactions/create.html:51
+msgid "Descripción"
+msgstr ""
+
+#: templates/accounts/dashboard.html:79
+msgid "Monto (original)"
+msgstr ""
+
+#: templates/accounts/dashboard.html:80
+msgid "CLP base"
+msgstr ""
+
+#: templates/accounts/dashboard.html:90 templates/transactions/create.html:21
+msgid "Gasto"
+msgstr ""
+
+#: templates/accounts/dashboard.html:92 templates/transactions/create.html:22
+msgid "Ingreso"
+msgstr ""
+
+#: templates/accounts/dashboard.html:111
+msgid "Aún no tienes movimientos. Prueba desde Telegram:"
+msgstr ""
+
+#: templates/accounts/dashboard.html:125
+msgid "Acciones rápidas"
+msgstr ""
+
+#: templates/accounts/dashboard.html:128
+msgid "Configurar moneda / idioma"
+msgstr ""
+
+#: templates/accounts/dashboard.html:131
+#: templates/accounts/telegram_link.html:4
+#: templates/accounts/telegram_link.html:9 templates/layouts/base_app.html:54
+msgid "Vincular Telegram"
+msgstr ""
+
+#: templates/accounts/dashboard.html:137 templates/loans/loan_detail.html:56
+#: templates/loans/loan_detail.html:76 templates/loans/loan_list.html:25
+#: templates/loans/loan_list.html:52
+msgid "Estado"
+msgstr ""
+
+#: templates/accounts/dashboard.html:138
+msgid "MVP en construcción."
+msgstr ""
+
+#: templates/accounts/login.html:4 templates/accounts/login.html:9
+#: templates/accounts/signup.html:26
+msgid "Iniciar sesión"
+msgstr ""
+
+#: templates/accounts/login.html:10
+msgid "Accede a tu panel para registrar gastos, presupuestos y tarjetas."
+msgstr ""
+
+#: templates/accounts/login.html:32
+msgid "Usuario o Email"
+msgstr ""
+
+#: templates/accounts/login.html:40 templates/owner/login.html:26
+#: templates/owner/staff.html:267
+msgid "Contraseña"
+msgstr ""
+
+#: templates/accounts/login.html:48
+msgid "Entrar"
+msgstr ""
+
+#: templates/accounts/login.html:53
+msgid "¿No tienes cuenta?"
+msgstr ""
+
+#: templates/accounts/login.html:54 templates/accounts/signup.html:4
+#: templates/accounts/signup.html:9
+msgid "Crear cuenta"
+msgstr ""
+
+#: templates/accounts/login.html:59
+msgid "Lo que podrás hacer"
+msgstr ""
+
+#: templates/accounts/login.html:61
+msgid "Registrar gastos e ingresos por bot o web"
+msgstr ""
+
+#: templates/accounts/login.html:62
+msgid "Presupuestos por categoría con alertas"
+msgstr ""
+
+#: templates/accounts/login.html:63
+msgid "Tarjetas con cupo disponible y ciclo de facturación"
+msgstr ""
+
+#: templates/accounts/login.html:64
+msgid "Préstamos: quién te debe, cuotas y recordatorios"
+msgstr ""
+
+#: templates/accounts/login.html:65
+msgid "Gráficos y análisis (Pro)"
+msgstr ""
+
+#: templates/accounts/profile.html:4 templates/accounts/profile.html:9
+#: templates/layouts/base_app.html:49
+msgid "Mi perfil"
+msgstr ""
+
+#: templates/accounts/profile.html:10
+msgid "Configura tu moneda e idioma preferido."
+msgstr ""
+
+#: templates/accounts/profile.html:16 templates/loans/create.html:35
+#: templates/loans/loan_form.html:35 templates/transactions/create.html:27
+msgid "Moneda"
+msgstr ""
+
+#: templates/accounts/profile.html:25
+msgid "Idioma"
+msgstr ""
+
+#: templates/accounts/profile.html:34 templates/owner/staff.html:172
+msgid "Guardar cambios"
+msgstr ""
+
+#: templates/accounts/signup.html:10
+msgid "Te enviaremos un link para verificar tu correo."
+msgstr ""
+
+#: templates/accounts/signup.html:20
+msgid "Registrarme"
+msgstr ""
+
+#: templates/accounts/signup.html:25
+msgid "¿Ya tienes cuenta?"
+msgstr ""
+
+#: templates/accounts/signup_done.html:4
+msgid "Verifica tu correo"
+msgstr ""
+
+#: templates/accounts/signup_done.html:9
+msgid "Revisa tu correo"
+msgstr ""
+
+#: templates/accounts/signup_done.html:11
+msgid "Te enviamos un enlace de verificación a"
+msgstr ""
+
+#: templates/accounts/signup_done.html:18
+msgid "Volver al login"
+msgstr ""
+
+#: templates/accounts/telegram_link.html:11
+msgid "Abre este enlace, presiona START y quedará vinculado tu usuario."
+msgstr ""
+
+#: templates/accounts/telegram_link.html:16
+msgid "Abrir Telegram"
+msgstr ""
+
+#: templates/accounts/telegram_link.html:20
+msgid "Deep link"
+msgstr ""
+
+#: templates/accounts/telegram_link.html:22
+msgid "Código"
+msgstr ""
+
+#: templates/layouts/base_app.html:22
+msgid "Panel de Usuario"
+msgstr ""
+
+#: templates/layouts/base_app.html:37
+msgid "Movimientos"
+msgstr ""
+
+#: templates/layouts/base_app.html:44 templates/loans/loan_list.html:5
+#: templates/loans/loan_list.html:12
+msgid "Préstamos"
+msgstr ""
+
+#: templates/layouts/base_app.html:72
+msgid "Salir"
+msgstr ""
+
+#: templates/layouts/base_app.html:84
+msgid "Bienvenido"
+msgstr ""
+
+#: templates/layouts/base_app.html:98 templates/layouts/base_owner.html:81
+#: templates/layouts/base_public.html:36
+msgid "Aplicar"
+msgstr ""
+
+#: templates/layouts/base_app.html:133
+msgid "Confirmar acción"
+msgstr ""
+
+#: templates/layouts/base_app.html:142 templates/owner/staff.html:169
+#: templates/owner/staff.html:212 templates/owner/staff.html:313
+msgid "Cancelar"
+msgstr ""
+
+#: templates/layouts/base_app.html:148
+msgid "Aceptar"
+msgstr ""
+
+#: templates/layouts/base_owner.html:22
+msgid "Panel interno"
+msgstr ""
+
+#: templates/layouts/base_owner.html:30
+msgid "Inicio"
+msgstr ""
+
+#: templates/layouts/base_owner.html:35
+msgid "Clientes"
+msgstr ""
+
+#: templates/layouts/base_owner.html:40 templates/owner/staff.html:90
+#: templates/owner/staff.html:239
+msgid "Staff"
+msgstr ""
+
+#: templates/layouts/base_owner.html:46
+msgid "Volver al panel usuario"
+msgstr ""
+
+#: templates/layouts/base_owner.html:55
+msgid "Salir (Owner)"
+msgstr ""
+
+#: templates/layouts/base_owner.html:67 templates/owner/staff.html:8
+msgid "Owner Admin"
+msgstr ""
+
+#: templates/loans/create.html:4 templates/loans/create.html:10
+#: templates/loans/loan_form.html:4 templates/loans/loan_form.html:10
+#: templates/loans/loan_list.html:18
+msgid "Nuevo préstamo"
+msgstr ""
+
+#: templates/loans/create.html:11 templates/loans/loan_form.html:11
+msgid "Crea el préstamo y se generan las cuotas automáticamente."
+msgstr ""
+
+#: templates/loans/create.html:19 templates/loans/loan_form.html:19
+#: templates/loans/loan_list.html:49
+msgid "Dirección"
+msgstr ""
+
+#: templates/loans/create.html:21 templates/loans/loan_detail.html:16
+#: templates/loans/loan_form.html:21 templates/loans/loan_list.html:62
+msgid "Presté (me deben)"
+msgstr ""
+
+#: templates/loans/create.html:22 templates/loans/loan_detail.html:18
+#: templates/loans/loan_form.html:22 templates/loans/loan_list.html:64
+msgid "Me prestaron (yo debo)"
+msgstr ""
+
+#: templates/loans/create.html:27 templates/loans/loan_form.html:27
+#: templates/loans/loan_list.html:48
+msgid "Persona"
+msgstr ""
+
+#: templates/loans/create.html:29 templates/loans/loan_form.html:29
+msgid "Rosa, Juan..."
+msgstr ""
+
+#: templates/loans/create.html:43 templates/loans/loan_detail.html:40
+#: templates/loans/loan_detail.html:75 templates/loans/loan_form.html:43
+#: templates/loans/loan_list.html:50 templates/transactions/create.html:37
+msgid "Monto"
+msgstr ""
+
+#: templates/loans/create.html:45 templates/loans/loan_form.html:45
+msgid "Ej: 450.000 o 200"
+msgstr ""
+
+#: templates/loans/create.html:51 templates/loans/loan_detail.html:50
+#: templates/loans/loan_form.html:51 templates/loans/loan_list.html:51
+msgid "Cuotas"
+msgstr ""
+
+#: templates/loans/create.html:57 templates/loans/loan_form.html:57
+msgid "Frecuencia"
+msgstr ""
+
+#: templates/loans/create.html:59 templates/loans/loan_form.html:59
+msgid "Mensual"
+msgstr ""
+
+#: templates/loans/create.html:60 templates/loans/loan_form.html:60
+msgid "Semanal"
+msgstr ""
+
+#: templates/loans/create.html:61 templates/loans/loan_form.html:61
+msgid "Quincenal"
+msgstr ""
+
+#: templates/loans/create.html:66 templates/loans/loan_form.html:66
+msgid "1er vencimiento"
+msgstr ""
+
+#: templates/loans/create.html:73 templates/loans/loan_form.html:73
+msgid "Nota"
+msgstr ""
+
+#: templates/loans/create.html:76 templates/loans/loan_form.html:76
+msgid "Opcional..."
+msgstr ""
+
+#: templates/loans/create.html:81 templates/loans/loan_form.html:81
+#: templates/owner/staff.html:316
+msgid "Crear"
+msgstr ""
+
+#: templates/loans/create.html:85 templates/loans/loan_detail.html:24
+#: templates/loans/loan_form.html:85 templates/transactions/create.html:62
+msgid "Volver"
+msgstr ""
+
+#: templates/loans/loan_detail.html:5 templates/loans/loan_detail.html:12
+msgid "Préstamo"
+msgstr ""
+
+#: templates/loans/loan_detail.html:30
+msgid "¿Cerrar este préstamo?"
+msgstr ""
+
+#: templates/loans/loan_detail.html:31
+msgid "Cerrar"
+msgstr ""
+
+#: templates/loans/loan_detail.html:52
+msgid "1er venc:"
+msgstr ""
+
+#: templates/loans/loan_detail.html:59 templates/loans/loan_list.html:28
+#: templates/loans/loan_list.html:77 templates/owner/staff.html:28
+msgid "Activo"
+msgstr ""
+
+#: templates/loans/loan_detail.html:61 templates/loans/loan_list.html:29
+#: templates/loans/loan_list.html:79
+msgid "Cerrado"
+msgstr ""
+
+#: templates/loans/loan_detail.html:63 templates/loans/loan_list.html:30
+#: templates/loans/loan_list.html:81
+msgid "Cancelado"
+msgstr ""
+
+#: templates/loans/loan_detail.html:74
+msgid "Vence"
+msgstr ""
+
+#: templates/loans/loan_detail.html:77
+msgid "Acción"
+msgstr ""
+
+#: templates/loans/loan_detail.html:95
+msgid "Pagada"
+msgstr ""
+
+#: templates/loans/loan_detail.html:97
+msgid "Atrasada"
+msgstr ""
+
+#: templates/loans/loan_detail.html:99
+msgid "Pendiente"
+msgstr ""
+
+#: templates/loans/loan_detail.html:108
+#, python-format
+msgid "¿Marcar cuota #%(n)s como pagada?"
+msgstr ""
+
+#: templates/loans/loan_detail.html:109
+msgid "Pagar"
+msgstr ""
+
+#: templates/loans/loan_list.html:13
+msgid "Control de préstamos y cuotas."
+msgstr ""
+
+#: templates/loans/loan_list.html:27
+msgid "Todos"
+msgstr ""
+
+#: templates/loans/loan_list.html:35
+msgid "Filtrar"
+msgstr ""
+
+#: templates/loans/loan_list.html:39
+msgid "Limpiar"
+msgstr ""
+
+#: templates/loans/loan_list.html:85
+msgid "Ver"
+msgstr ""
+
+#: templates/loans/loan_list.html:89
+msgid "Aún no tienes préstamos."
+msgstr ""
+
+#: templates/owner/login.html:20 templates/owner/staff.html:26
+#: templates/owner/staff.html:105 templates/owner/staff.html:253
+msgid "Usuario"
+msgstr ""
+
+#: templates/owner/staff.html:9
+msgid "Staff (Soporte / Finanzas / Admin General)"
+msgstr ""
+
+#: templates/owner/staff.html:10
+msgid "Estos NO son usuarios suscritos, son usuarios internos."
+msgstr ""
+
+#: templates/owner/staff.html:17
+msgid "Crear Staff"
+msgstr ""
+
+#: templates/owner/staff.html:27 templates/owner/staff.html:111
+#: templates/owner/staff.html:259
+msgid "Email"
+msgstr ""
+
+#: templates/owner/staff.html:29
+msgid "Telegram"
+msgstr ""
+
+#: templates/owner/staff.html:30 templates/owner/staff.html:139
+#: templates/owner/staff.html:286
+msgid "Roles"
+msgstr ""
+
+#: templates/owner/staff.html:31
+msgid "Acciones"
+msgstr ""
+
+#: templates/owner/staff.html:67
+msgid "Editar"
+msgstr ""
+
+#: templates/owner/staff.html:73
+msgid "Eliminar"
+msgstr ""
+
+#: templates/owner/staff.html:77
+msgid "Solo Admin General puede modificar."
+msgstr ""
+
+#: templates/owner/staff.html:91
+msgid "Editar usuario interno"
+msgstr ""
+
+#: templates/owner/staff.html:119
+msgid "Nueva contraseña"
+msgstr ""
+
+#: templates/owner/staff.html:119 templates/owner/staff.html:125
+msgid "opcional"
+msgstr ""
+
+#: templates/owner/staff.html:125 templates/owner/staff.html:273
+msgid "Repetir contraseña"
+msgstr ""
+
+#: templates/owner/staff.html:135 templates/owner/staff.html:282
+msgid "Usuario activo"
+msgstr ""
+
+#: templates/owner/staff.html:145 templates/owner/staff.html:291
+msgid "Admin General"
+msgstr ""
+
+#: templates/owner/staff.html:151 templates/owner/staff.html:296
+msgid "Finanzas"
+msgstr ""
+
+#: templates/owner/staff.html:157 templates/owner/staff.html:301
+msgid "Soporte"
+msgstr ""
+
+#: templates/owner/staff.html:162
+msgid "Puedes seleccionar más de un rol."
+msgstr ""
+
+#: templates/owner/staff.html:188
+msgid "Acción peligrosa"
+msgstr ""
+
+#: templates/owner/staff.html:189
+msgid "Eliminar staff"
+msgstr ""
+
+#: templates/owner/staff.html:198
+msgid "Vas a eliminar a:"
+msgstr ""
+
+#: templates/owner/staff.html:202
+msgid "Esta acción no se puede deshacer."
+msgstr ""
+
+#: templates/owner/staff.html:215
+msgid "Sí, eliminar"
+msgstr ""
+
+#: templates/owner/staff.html:224
+msgid "No hay staff aún."
+msgstr ""
+
+#: templates/owner/staff.html:240
+msgid "Crear usuario interno"
+msgstr ""
+
+#: templates/owner/staff.html:306
+msgid "Selecciona al menos un rol."
+msgstr ""
+
+#: templates/transactions/create.html:4 templates/transactions/create.html:10
+msgid "Nuevo movimiento"
+msgstr ""
+
+#: templates/transactions/create.html:11
+msgid "Registra manualmente un gasto o ingreso (se normaliza a CLP)."
+msgstr ""
+
+#: templates/transactions/create.html:38
+msgid "Ej: 320.240 o 32 USD"
+msgstr ""
+
+#: templates/transactions/create.html:40
+msgid "Tip: puedes escribir con puntos de miles."
+msgstr ""
+
+#: templates/transactions/create.html:44
+msgid "Fecha y hora"
+msgstr ""
+
+#: templates/transactions/create.html:52
+msgid "Uber, Sueldo, Mercado..."
+msgstr ""
+
+#: templates/transactions/create.html:58
+msgid "Guardar"
+msgstr ""

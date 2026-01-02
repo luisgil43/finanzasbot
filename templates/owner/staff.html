@@ -1,0 +1,343 @@
+{% extends "layouts/base_owner.html" %}
+{% load i18n %}
+{% block title %}Owner · Staff{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+  <div>
+    <div class="text-xs text-slate-400">{% trans "Owner Admin" %}</div>
+    <div class="text-2xl font-semibold">{% trans "Staff (Soporte / Finanzas / Admin General)" %}</div>
+    <div class="text-sm text-slate-300">{% trans "Estos NO son usuarios suscritos, son usuarios internos." %}</div>
+  </div>
+
+  {% if can_manage %}
+  <button type="button"
+          data-open="#modal-create"
+          class="inline-flex items-center gap-2 rounded-2xl px-4 py-3 bg-emerald-500/15 hover:bg-emerald-500/20 border border-emerald-500/30 text-sm font-semibold">
+    ➕ {% trans "Crear Staff" %}
+  </button>
+  {% endif %}
+</div>
+
+<div class="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
+  <table class="min-w-full text-sm">
+    <thead class="bg-slate-950/40 border-b border-white/10">
+      <tr>
+        <th class="text-left p-3">{% trans "Usuario" %}</th>
+        <th class="text-left p-3">{% trans "Email" %}</th>
+        <th class="text-left p-3">{% trans "Activo" %}</th>
+        <th class="text-left p-3">{% trans "Telegram" %}</th>
+        <th class="text-left p-3">{% trans "Roles" %}</th>
+        <th class="text-left p-3">{% trans "Acciones" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in rows %}
+      <tr class="border-b border-white/5">
+        <td class="p-3 font-semibold">{{ r.user.username }}</td>
+        <td class="p-3 text-slate-300">{{ r.user.email|default:"—" }}</td>
+        <td class="p-3">{% if r.user.is_active %}✅{% else %}⛔{% endif %}</td>
+
+        <td class="p-3">
+          {% if r.telegram_linked %}
+            <span class="px-2 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-xs font-semibold">✅ Vinculado</span>
+          {% else %}
+            <span class="text-slate-400">—</span>
+          {% endif %}
+        </td>
+
+        <td class="p-3">
+          <div class="flex flex-wrap gap-2">
+            {% for role in r.roles %}
+              <span class="px-2 py-1 rounded-lg bg-slate-950/50 border border-white/10 text-xs">
+                {{ role|upper }}
+              </span>
+            {% empty %}
+              <span class="text-slate-400">—</span>
+            {% endfor %}
+          </div>
+        </td>
+
+        <td class="p-3">
+          {% if can_manage %}
+          <div class="flex flex-wrap gap-2">
+            <button type="button"
+                    data-open="#modal-edit-{{ r.user.id }}"
+                    class="px-3 py-2 rounded-xl border border-white/10 bg-white/10 hover:bg-white/15 text-xs font-semibold">
+              ✏️ {% trans "Editar" %}
+            </button>
+
+            <button type="button"
+                    data-open="#modal-delete-{{ r.user.id }}"
+                    class="px-3 py-2 rounded-xl border border-rose-500/30 bg-rose-500/15 hover:bg-rose-500/20 text-xs font-semibold">
+              🗑️ {% trans "Eliminar" %}
+            </button>
+          </div>
+          {% else %}
+            <span class="text-xs text-slate-400">{% trans "Solo Admin General puede modificar." %}</span>
+          {% endif %}
+        </td>
+      </tr>
+
+      {# ---------------- MODAL EDIT ---------------- #}
+      <div id="modal-edit-{{ r.user.id }}" class="modal hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" data-close></div>
+
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+          <div class="w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl">
+            <div class="p-6 border-b border-white/10 flex items-start justify-between gap-4">
+              <div>
+                <div class="text-xs text-slate-400">{% trans "Staff" %}</div>
+                <div class="text-xl font-semibold">{% trans "Editar usuario interno" %}</div>
+              </div>
+              <button type="button" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10" data-close>
+                ✖
+              </button>
+            </div>
+
+            <form method="post" class="p-6 space-y-4">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="update_staff">
+              <input type="hidden" name="user_id" value="{{ r.user.id }}">
+
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label class="text-sm text-slate-300">{% trans "Usuario" %}</label>
+                  <input name="username" value="{{ r.user.username }}" required
+                         class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20">
+                </div>
+
+                <div class="space-y-2">
+                  <label class="text-sm text-slate-300">{% trans "Email" %}</label>
+                  <input name="email" value="{{ r.user.email }}" type="email"
+                         class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20">
+                </div>
+              </div>
+
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <label class="text-sm text-slate-300">{% trans "Nueva contraseña" %} <span class="text-xs text-slate-400">({% trans "opcional" %})</span></label>
+                  <input name="password1" type="password"
+                         class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20">
+                </div>
+
+                <div class="space-y-2">
+                  <label class="text-sm text-slate-300">{% trans "Repetir contraseña" %} <span class="text-xs text-slate-400">({% trans "opcional" %})</span></label>
+                  <input name="password2" type="password"
+                         class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20">
+                </div>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <input id="active-{{ r.user.id }}" type="checkbox" name="is_active" value="1"
+                       {% if r.user.is_active %}checked{% endif %}
+                       class="w-5 h-5 rounded border-white/20 bg-slate-950/60">
+                <label for="active-{{ r.user.id }}" class="text-sm text-slate-300">{% trans "Usuario activo" %}</label>
+              </div>
+
+              <div class="space-y-2">
+                <div class="text-sm text-slate-300">{% trans "Roles" %}</div>
+
+                <div class="grid sm:grid-cols-3 gap-2">
+                  <label class="flex items-center gap-2 px-3 py-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer">
+                    <input type="checkbox" name="roles" value="{{ ROLE_ADMIN }}"
+                           {% if ROLE_ADMIN in r.roles %}checked{% endif %}>
+                    <span class="text-sm">🛡️ {% trans "Admin General" %}</span>
+                  </label>
+
+                  <label class="flex items-center gap-2 px-3 py-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer">
+                    <input type="checkbox" name="roles" value="{{ ROLE_FINANCE }}"
+                           {% if ROLE_FINANCE in r.roles %}checked{% endif %}>
+                    <span class="text-sm">💳 {% trans "Finanzas" %}</span>
+                  </label>
+
+                  <label class="flex items-center gap-2 px-3 py-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer">
+                    <input type="checkbox" name="roles" value="{{ ROLE_SUPPORT }}"
+                           {% if ROLE_SUPPORT in r.roles %}checked{% endif %}>
+                    <span class="text-sm">🛠️ {% trans "Soporte" %}</span>
+                  </label>
+                </div>
+
+                <div class="text-xs text-slate-400">
+                  {% trans "Puedes seleccionar más de un rol." %}
+                </div>
+              </div>
+
+              <div class="pt-2 flex items-center justify-end gap-2">
+                <button type="button" data-close
+                        class="px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm">
+                  {% trans "Cancelar" %}
+                </button>
+                <button class="px-4 py-3 rounded-2xl bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 font-semibold text-sm">
+                  {% trans "Guardar cambios" %}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {# ---------------- MODAL DELETE ---------------- #}
+      <div id="modal-delete-{{ r.user.id }}" class="modal hidden fixed inset-0 z-50">
+        <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" data-close></div>
+
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+          <div class="w-full max-w-lg rounded-3xl border border-rose-500/20 bg-slate-950/95 shadow-2xl">
+            <div class="p-6 border-b border-white/10 flex items-start justify-between gap-4">
+              <div>
+                <div class="text-xs text-rose-200/80">{% trans "Acción peligrosa" %}</div>
+                <div class="text-xl font-semibold">{% trans "Eliminar staff" %}</div>
+              </div>
+              <button type="button" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10" data-close>
+                ✖
+              </button>
+            </div>
+
+            <div class="p-6 space-y-3">
+              <p class="text-sm text-slate-300">
+                {% trans "Vas a eliminar a:" %}
+                <span class="font-semibold text-slate-100">{{ r.user.username }}</span>
+              </p>
+              <p class="text-xs text-slate-400">
+                {% trans "Esta acción no se puede deshacer." %}
+              </p>
+
+              <form method="post" action="{% url 'owner_panel:staff' %}" class="pt-2 flex items-center justify-end gap-2">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="delete_staff">
+                <input type="hidden" name="user_id" value="{{ r.user.id }}">
+
+                <button type="button" data-close
+                        class="px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm">
+                  {% trans "Cancelar" %}
+                </button>
+                <button class="px-4 py-3 rounded-2xl bg-rose-500/90 hover:bg-rose-500 text-slate-950 font-semibold text-sm">
+                  {% trans "Sí, eliminar" %}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {% empty %}
+      <tr><td class="p-6 text-slate-300" colspan="6">{% trans "No hay staff aún." %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if can_manage %}
+{# ---------------- MODAL CREATE ---------------- #}
+<div id="modal-create" class="modal hidden fixed inset-0 z-50">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" data-close></div>
+
+  <div class="relative min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl rounded-3xl border border-white/10 bg-slate-950/95 shadow-2xl">
+      <div class="p-6 border-b border-white/10 flex items-start justify-between gap-4">
+        <div>
+          <div class="text-xs text-slate-400">{% trans "Staff" %}</div>
+          <div class="text-xl font-semibold">{% trans "Crear usuario interno" %}</div>
+        </div>
+        <button type="button" class="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10" data-close>
+          ✖
+        </button>
+      </div>
+
+      <form method="post" class="p-6 space-y-4">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="create_staff">
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="text-sm text-slate-300">{% trans "Usuario" %}</label>
+            <input name="username" required
+                   class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20">
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm text-slate-300">{% trans "Email" %}</label>
+            <input name="email" type="email"
+                   class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20">
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div class="space-y-2">
+            <label class="text-sm text-slate-300">{% trans "Contraseña" %}</label>
+            <input name="password1" type="password" required
+                   class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20">
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm text-slate-300">{% trans "Repetir contraseña" %}</label>
+            <input name="password2" type="password" required
+                   class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-white/20">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <input id="active-new" type="checkbox" name="is_active" value="1" checked
+                 class="w-5 h-5 rounded border-white/20 bg-slate-950/60">
+          <label for="active-new" class="text-sm text-slate-300">{% trans "Usuario activo" %}</label>
+        </div>
+
+        <div class="space-y-2">
+          <div class="text-sm text-slate-300">{% trans "Roles" %}</div>
+
+          <div class="grid sm:grid-cols-3 gap-2">
+            <label class="flex items-center gap-2 px-3 py-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer">
+              <input type="checkbox" name="roles" value="{{ ROLE_ADMIN }}">
+              <span class="text-sm">🛡️ {% trans "Admin General" %}</span>
+            </label>
+
+            <label class="flex items-center gap-2 px-3 py-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer">
+              <input type="checkbox" name="roles" value="{{ ROLE_FINANCE }}">
+              <span class="text-sm">💳 {% trans "Finanzas" %}</span>
+            </label>
+
+            <label class="flex items-center gap-2 px-3 py-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 cursor-pointer">
+              <input type="checkbox" name="roles" value="{{ ROLE_SUPPORT }}">
+              <span class="text-sm">🛠️ {% trans "Soporte" %}</span>
+            </label>
+          </div>
+
+          <div class="text-xs text-slate-400">
+            {% trans "Selecciona al menos un rol." %}
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end gap-2">
+          <button type="button" data-close
+                  class="px-4 py-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm">
+            {% trans "Cancelar" %}
+          </button>
+          <button class="px-4 py-3 rounded-2xl bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 font-semibold text-sm">
+            {% trans "Crear" %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  document.addEventListener("click", (e) => {
+    const openBtn = e.target.closest("[data-open]");
+    if (openBtn) {
+      const sel = openBtn.getAttribute("data-open");
+      const modal = document.querySelector(sel);
+      if (modal) modal.classList.remove("hidden");
+      return;
+    }
+
+    const closeEl = e.target.closest("[data-close]");
+    if (closeEl) {
+      const modal = closeEl.closest(".modal");
+      if (modal) modal.classList.add("hidden");
+      return;
+    }
+  });
+</script>
+{% endblock %}

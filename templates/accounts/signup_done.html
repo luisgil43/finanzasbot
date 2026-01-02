@@ -1,0 +1,22 @@
+{% extends "layouts/base_public.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Verifica tu correo" %} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="max-w-xl">
+  <div class="rounded-3xl border border-white/10 bg-white/5 p-8">
+    <h1 class="text-2xl font-semibold mb-2">{% trans "Revisa tu correo" %}</h1>
+    <p class="text-slate-300">
+      {% trans "Te enviamos un enlace de verificación a" %} <span class="font-semibold">{{ email }}</span>.
+    </p>
+    <p class="text-xs text-slate-400 mt-3">
+      (En desarrollo lo verás en la consola)
+    </p>
+
+    <div class="mt-6">
+      <a href="/usuarios/login/" class="underline hover:text-white">{% trans "Volver al login" %}</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Nuevo movimiento" %} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl space-y-6">
+
+  <div>
+    <h1 class="text-2xl font-semibold">➕ {% trans "Nuevo movimiento" %}</h1>
+    <p class="text-slate-300 text-sm">{% trans "Registra manualmente un gasto o ingreso (se normaliza a CLP)." %}</p>
+  </div>
+
+  <form method="post" class="rounded-3xl border border-white/10 bg-white/5 p-6 space-y-4">
+    {% csrf_token %}
+
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Tipo" %}</label>
+        <select name="kind" class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+          <option value="expense">{% trans "Gasto" %}</option>
+          <option value="income">{% trans "Ingreso" %}</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Moneda" %}</label>
+        <select name="currency_original" class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+          <option value="CLP">CLP</option>
+          <option value="USD">USD</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid sm:grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Monto" %}</label>
+        <input name="amount_original" placeholder="{% trans 'Ej: 320.240 o 32 USD' %}"
+               class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm" required>
+        <div class="text-xs text-slate-400 mt-1">{% trans "Tip: puedes escribir con puntos de miles." %}</div>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Fecha y hora" %}</label>
+        <input type="datetime-local" name="occurred_at"
+               class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+      </div>
+    </div>
+
+    <div>
+      <label class="text-xs text-slate-300">{% trans "Descripción" %}</label>
+      <input name="description" placeholder="{% trans 'Uber, Sueldo, Mercado...' %}"
+             class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+    </div>
+
+    <div class="flex gap-2">
+      <button class="rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm">
+        {% trans "Guardar" %} ✅
+      </button>
+      <a href="{% url 'transactions:list' %}"
+         class="rounded-2xl border border-white/10 bg-transparent hover:bg-white/5 px-4 py-2 text-sm">
+        {% trans "Volver" %}
+      </a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

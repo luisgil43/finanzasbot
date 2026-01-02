@@ -1,0 +1,95 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+
+{% block title %}
+  {% if is_edit %}{% trans "Editar tarjeta" %}{% else %}{% trans "Nueva tarjeta" %}{% endif %} · Finanzas Bot
+{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl space-y-6">
+
+  <div>
+    <h1 class="text-2xl font-semibold">
+      {% if is_edit %}✏️ {% trans "Editar tarjeta" %}{% else %}➕ {% trans "Nueva tarjeta" %}{% endif %}
+    </h1>
+    <p class="text-slate-300 text-sm">{% trans "Configura cupo y ciclo (corte/pago). Luego podrás asociar gastos a esta tarjeta." %}</p>
+  </div>
+
+  <form method="post" class="rounded-3xl border border-white/10 bg-white/5 p-6 space-y-4">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-sm text-rose-200">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <div class="grid md:grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Nombre" %}</label>
+        {{ form.name }}
+        {% if form.name.errors %}<div class="text-xs text-rose-200 mt-1">{{ form.name.errors }}</div>{% endif %}
+      </div>
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Banco" %}</label>
+        {{ form.bank }}
+        {% if form.bank.errors %}<div class="text-xs text-rose-200 mt-1">{{ form.bank.errors }}</div>{% endif %}
+      </div>
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Marca" %}</label>
+        {{ form.brand }}
+        {% if form.brand.errors %}<div class="text-xs text-rose-200 mt-1">{{ form.brand.errors }}</div>{% endif %}
+      </div>
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Últimos 4" %}</label>
+        {{ form.last4 }}
+        {% if form.last4.errors %}<div class="text-xs text-rose-200 mt-1">{{ form.last4.errors }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-3">
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Moneda" %}</label>
+        {{ form.currency }}
+        {% if form.currency.errors %}<div class="text-xs text-rose-200 mt-1">{{ form.currency.errors }}</div>{% endif %}
+      </div>
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Límite / cupo" %}</label>
+        {{ form.credit_limit }}
+        {% if form.credit_limit.errors %}<div class="text-xs text-rose-200 mt-1">{{ form.credit_limit.errors }}</div>{% endif %}
+      </div>
+      <div class="flex items-end gap-2">
+        <label class="text-xs text-slate-300 flex items-center gap-2">
+          {{ form.is_active }} {% trans "Activa" %}
+        </label>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-3">
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Día de corte" %}</label>
+        {{ form.billing_day }}
+        <div class="text-xs text-slate-500 mt-1">{% trans "Ej: 5, 10, 25" %}</div>
+        {% if form.billing_day.errors %}<div class="text-xs text-rose-200 mt-1">{{ form.billing_day.errors }}</div>{% endif %}
+      </div>
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Día de pago" %}</label>
+        {{ form.due_day }}
+        <div class="text-xs text-slate-500 mt-1">{% trans "Ej: 1, 15, 28" %}</div>
+        {% if form.due_day.errors %}<div class="text-xs text-rose-200 mt-1">{{ form.due_day.errors }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button class="rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm">
+        💾 {% trans "Guardar" %}
+      </button>
+
+      <a href="{% url 'cards:list' %}" class="text-slate-300 hover:text-white text-sm">
+        ← {% trans "Volver" %}
+      </a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Editar categoría" %} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl space-y-6">
+
+  <div>
+    <h1 class="text-2xl font-semibold">🏷️ {% trans "Editar categoría" %}</h1>
+    <p class="text-slate-300 text-sm">{% trans "Edita el nombre y las keywords separadas por coma." %}</p>
+  </div>
+
+  <form method="post" class="rounded-3xl border border-white/10 bg-white/5 p-6 space-y-4">
+    {% csrf_token %}
+
+    <div>
+      <label class="text-xs text-slate-300">{% trans "Nombre" %}</label>
+      <input name="name" value="{{ cat.name }}"
+             class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm" required>
+    </div>
+
+    <div>
+      <label class="text-xs text-slate-300">{% trans "Keywords (coma)" %}</label>
+      <input name="match_keywords" value="{{ cat.match_keywords|default:'' }}"
+             placeholder="{% trans 'ej: uber, bencina, supermercado' %}"
+             class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+      <div class="text-xs text-slate-400 mt-1">
+        {% trans "Ejemplo: uber eats, rappi, restaurant, cafeteria" %}
+      </div>
+    </div>
+
+    <div class="flex gap-2">
+      <button class="rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm">
+        ✅ {% trans "Guardar" %}
+      </button>
+
+      <a href="{% url 'budgets:list' %}"
+         class="rounded-2xl border border-white/10 bg-transparent hover:bg-white/5 px-4 py-2 text-sm">
+        ← {% trans "Volver" %}
+      </a>
+    </div>
+  </form>
+
+</div>
+{% endblock %}

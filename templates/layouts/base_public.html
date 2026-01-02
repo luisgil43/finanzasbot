@@ -1,0 +1,60 @@
+{% load i18n %}
+<!doctype html>
+<html lang="{{ request.LANGUAGE_CODE|default:'es' }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Finanzas Bot{% endblock %}</title>
+
+  <!-- Tailwind CDN (dev) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-100">
+
+  <header class="border-b border-white/10">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="/" class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-white/10 grid place-items-center border border-white/10">
+          <span class="text-lg">💸</span>
+        </div>
+        <div class="leading-tight">
+          <div class="font-semibold">Finanzas Bot</div>
+          <div class="text-xs text-slate-300">Controla gastos, presupuestos y tarjetas</div>
+        </div>
+      </a>
+
+      {# ✅ Cambiado: ahora pega el idioma también en UserProfile.language si está logueado #}
+      <form action="{% url 'accounts:set_language' %}" method="post" class="flex items-center gap-2">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.path }}">
+        <select name="language"
+                class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-white/20">
+          <option value="es" {% if request.LANGUAGE_CODE == "es" %}selected{% endif %}>Español</option>
+          <option value="en" {% if request.LANGUAGE_CODE == "en" %}selected{% endif %}>English</option>
+        </select>
+        <button class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-sm">
+          {% trans "Aplicar" %}
+        </button>
+      </form>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    {% if messages %}
+      <div class="space-y-2 mb-6">
+        {% for m in messages %}
+          <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
+            {{ m }}
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="max-w-6xl mx-auto px-4 pb-10 text-xs text-slate-400">
+    © {{ now|date:"Y" }} Finanzas Bot · MVP
+  </footer>
+</body>
+</html>

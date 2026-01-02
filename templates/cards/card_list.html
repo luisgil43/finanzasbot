@@ -1,0 +1,109 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+{% load money %}
+
+{% block title %}{% trans "Tarjetas" %} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold">💳 {% trans "Tarjetas" %}</h1>
+      <p class="text-slate-300 text-sm">{% trans "Controla cupo, ciclo de facturación y disponible estimado." %}</p>
+    </div>
+
+    <a href="{% url 'cards:create' %}"
+       class="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm">
+      ➕ {% trans "Nueva tarjeta" %}
+    </a>
+  </div>
+
+  <!-- Totales -->
+  <div class="grid md:grid-cols-3 gap-3 text-sm">
+    <div class="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3">
+      <div class="text-xs text-slate-400">{% trans "Cupo total" %}</div>
+      <div class="text-lg font-semibold">{{ total_limit|money:"CLP" }} <span class="text-slate-400">CLP</span></div>
+    </div>
+    <div class="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3">
+      <div class="text-xs text-slate-400">{% trans "Usado (ciclo actual)" %}</div>
+      <div class="text-lg font-semibold">{{ total_spent|money:"CLP" }} <span class="text-slate-400">CLP</span></div>
+    </div>
+    <div class="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3">
+      <div class="text-xs text-slate-400">{% trans "Disponible estimado" %}</div>
+      <div class="text-lg font-semibold">{{ total_available|money:"CLP" }} <span class="text-slate-400">CLP</span></div>
+    </div>
+  </div>
+
+  <!-- Tabla -->
+  <div class="overflow-x-auto rounded-3xl border border-white/10 bg-slate-950/40">
+    <table class="min-w-full text-sm">
+      <thead class="border-b border-white/10 bg-slate-950/60">
+        <tr>
+          <th class="text-left p-3">{% trans "Tarjeta" %}</th>
+          <th class="text-right p-3">{% trans "Límite" %}</th>
+          <th class="text-right p-3">{% trans "Usado" %}</th>
+          <th class="text-right p-3">{% trans "Disponible" %}</th>
+          <th class="text-left p-3">{% trans "Ciclo" %}</th>
+          <th class="text-right p-3">{% trans "Acciones" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+          <tr class="border-b border-white/5">
+            <td class="p-3">
+              <div class="text-slate-200 font-semibold">
+                <a class="hover:underline" href="{% url 'cards:detail' r.card.id %}">
+                  {{ r.card.name }}
+                </a>
+                {% if r.card.last4 %}<span class="text-slate-400 font-normal"> • ****{{ r.card.last4 }}</span>{% endif %}
+              </div>
+              <div class="text-xs text-slate-400">
+                {% if r.card.bank %}{{ r.card.bank }}{% endif %}
+                {% if r.card.brand %}{% if r.card.bank %} · {% endif %}{{ r.card.brand }}{% endif %}
+                {% if not r.card.is_active %} · <span class="text-rose-300">{% trans "Inactiva" %}</span>{% endif %}
+              </div>
+            </td>
+
+            <td class="p-3 text-right font-semibold">
+              {{ r.card.credit_limit|money:"CLP" }} <span class="text-slate-400 font-normal">CLP</span>
+            </td>
+
+            <td class="p-3 text-right font-semibold">
+              {{ r.spent|money:"CLP" }} <span class="text-slate-400 font-normal">CLP</span>
+            </td>
+
+            <td class="p-3 text-right font-semibold">
+              {{ r.available|money:"CLP" }} <span class="text-slate-400 font-normal">CLP</span>
+            </td>
+
+            <td class="p-3 text-slate-300">
+              <div class="text-xs text-slate-400">{% trans "Ciclo actual" %}</div>
+              <div>{{ r.cycle_start }} → {{ r.cycle_end }}</div>
+              <div class="text-xs text-slate-500">{% trans "Corte" %}: {{ r.card.billing_day }} · {% trans "Pago" %}: {{ r.card.due_day }}</div>
+            </td>
+
+            <td class="p-3 text-right">
+              <div class="inline-flex items-center gap-2">
+                <a href="{% url 'cards:edit' r.card.id %}" class="text-sky-300 hover:text-sky-200">{% trans "Editar" %}</a>
+                <form method="post" action="{% url 'cards:delete' r.card.id %}" class="inline">
+                  {% csrf_token %}
+                  <button class="text-rose-300 hover:text-rose-200"
+                          onclick="return confirm('{% trans "¿Eliminar esta tarjeta?" %}');">
+                    {% trans "Eliminar" %}
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="p-4 text-slate-300">{% trans "No hay tarjetas aún." %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "layouts/base_owner.html" %}
+{% block content %}
+
+<div class="grid md:grid-cols-3 gap-4 mb-6">
+  <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+    <div class="text-xs text-slate-400">Usuarios</div>
+    <div class="text-2xl font-semibold">{{ total_users }}</div>
+  </div>
+  <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+    <div class="text-xs text-slate-400">Activos</div>
+    <div class="text-2xl font-semibold">{{ total_active }}</div>
+  </div>
+  <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+    <div class="text-xs text-slate-400">Cobro</div>
+    <div class="text-2xl font-semibold">
+      {% if billing.billing_enabled %}ACTIVO ✅{% else %}DESACTIVADO 🧪{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="rounded-2xl border border-white/10 bg-white/5 p-6">
+  <div class="flex items-start justify-between gap-4">
+    <div>
+      <div class="text-lg font-semibold">Control de Cobro</div>
+      <div class="text-sm text-slate-300">Activa/desactiva el cobro global mientras pruebas.</div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="toggle_billing">
+      <button class="px-4 py-2 rounded-xl border border-white/10 bg-white/10 hover:bg-white/15 text-sm font-semibold">
+        {% if billing.billing_enabled %}Desactivar{% else %}Activar{% endif %}
+      </button>
+    </form>
+  </div>
+
+  <div class="mt-6">
+    <form method="post" class="flex flex-wrap items-end gap-3">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="set_go_live">
+      <div>
+        <div class="text-xs text-slate-400 mb-1">Go-live (opcional)</div>
+        <input type="date" name="go_live_date" value="{{ billing.go_live_date|date:'Y-m-d' }}"
+               class="bg-slate-950/60 border border-white/10 rounded-xl px-3 py-2 text-sm">
+      </div>
+      <button class="px-4 py-2 rounded-xl border border-white/10 bg-white/10 hover:bg-white/15 text-sm font-semibold">
+        Guardar fecha
+      </button>
+      <a href="/owner/users/" class="px-4 py-2 rounded-xl border border-white/10 bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 text-sm font-semibold">
+        Ver usuarios
+      </a>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

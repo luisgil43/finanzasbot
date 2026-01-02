@@ -1,0 +1,99 @@
+{% extends "layouts/base_owner.html" %}
+{% block content %}
+
+<div class="flex items-end justify-between gap-4 mb-6">
+  <div>
+    <div class="text-lg font-semibold">Usuarios</div>
+    <div class="text-sm text-slate-300">Suspender, cambiar plan y dar Pro gratis.</div>
+  </div>
+  <a href="/owner/" class="px-4 py-2 rounded-xl border border-white/10 bg-white/10 hover:bg-white/15 text-sm">
+    ← Volver
+  </a>
+</div>
+
+<div class="overflow-x-auto rounded-2xl border border-white/10 bg-white/5">
+  <table class="min-w-full text-sm">
+    <thead class="bg-slate-950/40 border-b border-white/10">
+      <tr>
+        <th class="text-left p-3">Usuario</th>
+        <th class="text-left p-3">Email</th>
+        <th class="text-left p-3">Activo</th>
+        <th class="text-left p-3">Plan</th>
+        <th class="text-left p-3">Pro gratis</th>
+        <th class="text-left p-3">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr class="border-b border-white/5">
+        <td class="p-3 font-semibold">{{ row.u.username }}</td>
+        <td class="p-3 text-slate-300">{{ row.u.email|default:"—" }}</td>
+        <td class="p-3">
+          {% if row.u.is_active %}✅{% else %}⛔{% endif %}
+        </td>
+        <td class="p-3">
+          <span class="px-2 py-1 rounded-lg bg-slate-950/50 border border-white/10">
+            {{ row.sub.effective_plan|upper }}
+          </span>
+        </td>
+        <td class="p-3 text-slate-300">
+          {% if row.sub.comped_pro %}
+            ✅ {% if row.sub.comped_until %}(hasta {{ row.sub.comped_until }}){% else %}(indefinido){% endif %}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td class="p-3">
+          <div class="flex flex-wrap gap-2">
+
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="user_id" value="{{ row.u.id }}">
+              <input type="hidden" name="action" value="toggle_active">
+              <button class="px-3 py-2 rounded-xl border border-white/10 bg-white/10 hover:bg-white/15 text-xs font-semibold">
+                {% if row.u.is_active %}Suspender{% else %}Activar{% endif %}
+              </button>
+            </form>
+
+            <form method="post" class="flex items-center gap-2">
+              {% csrf_token %}
+              <input type="hidden" name="user_id" value="{{ row.u.id }}">
+              <input type="hidden" name="action" value="set_plan">
+              <select name="plan" class="bg-slate-950/60 border border-white/10 rounded-xl px-2 py-2 text-xs">
+                <option value="free" {% if row.sub.plan == "free" %}selected{% endif %}>FREE</option>
+                <option value="plus" {% if row.sub.plan == "plus" %}selected{% endif %}>PLUS</option>
+                <option value="pro" {% if row.sub.plan == "pro" %}selected{% endif %}>PRO</option>
+              </select>
+              <button class="px-3 py-2 rounded-xl border border-white/10 bg-white/10 hover:bg-white/15 text-xs font-semibold">
+                Guardar
+              </button>
+            </form>
+
+            <form method="post" class="flex items-center gap-2">
+              {% csrf_token %}
+              <input type="hidden" name="user_id" value="{{ row.u.id }}">
+              <input type="hidden" name="action" value="give_comped_pro">
+              <input type="date" name="comped_until" class="bg-slate-950/60 border border-white/10 rounded-xl px-2 py-2 text-xs">
+              <button class="px-3 py-2 rounded-xl bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 text-xs font-semibold">
+                Dar Pro gratis
+              </button>
+            </form>
+
+            <form method="post">
+              {% csrf_token %}
+              <input type="hidden" name="user_id" value="{{ row.u.id }}">
+              <input type="hidden" name="action" value="remove_comped">
+              <button class="px-3 py-2 rounded-xl border border-white/10 bg-rose-500/20 hover:bg-rose-500/30 text-xs font-semibold">
+                Quitar Pro gratis
+              </button>
+            </form>
+
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

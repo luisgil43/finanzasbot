@@ -1,0 +1,30 @@
+{% extends "layouts/base_public.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Crear cuenta" %} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="max-w-xl">
+  <div class="rounded-3xl border border-white/10 bg-white/5 p-8">
+    <h1 class="text-3xl font-semibold mb-2">{% trans "Crear cuenta" %}</h1>
+    <p class="text-slate-300 mb-8">{% trans "Te enviaremos un link para verificar tu correo." %}</p>
+
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <!-- Usamos tu form actual, pero lo encapsulamos bonito -->
+      <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+        {{ form.as_p }}
+      </div>
+
+      <button class="w-full rounded-2xl px-4 py-3 bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 font-semibold">
+        {% trans "Registrarme" %}
+      </button>
+    </form>
+
+    <div class="mt-6 text-sm text-slate-300">
+      {% trans "¿Ya tienes cuenta?" %}
+      <a class="underline hover:text-white" href="/usuarios/login/">{% trans "Iniciar sesión" %}</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

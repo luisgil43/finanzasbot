@@ -1,0 +1,104 @@
+{% load i18n %}
+<!doctype html>
+<html lang="{{ request.LANGUAGE_CODE|default:'es' }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Owner Admin · Finanzas Bot{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+
+  <div class="min-h-screen grid lg:grid-cols-[280px_1fr]">
+    <!-- Sidebar Owner -->
+    <aside class="border-r border-white/10 bg-slate-950/60">
+      <div class="p-5 border-b border-white/10">
+        <a href="/owner/" class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-white/10 grid place-items-center border border-white/10">
+            <span class="text-lg">🛡️</span>
+          </div>
+          <div class="leading-tight">
+            <div class="font-semibold">Owner Admin</div>
+            <div class="text-xs text-slate-400">{% trans "Panel interno" %}</div>
+          </div>
+        </a>
+      </div>
+
+      <nav class="p-3 space-y-1">
+        <a href="/owner/"
+           class="block px-3 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 text-sm">
+          🧭 {% trans "Inicio" %}
+        </a>
+
+        <a href="/owner/users/"
+           class="block px-3 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 text-sm">
+          👤 {% trans "Clientes" %}
+        </a>
+
+        <a href="/owner/staff/"
+           class="block px-3 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 text-sm">
+          🧰 {% trans "Staff" %}
+        </a>
+
+        <div class="pt-3 mt-3 border-t border-white/10">
+          <a href="/usuarios/"
+             class="block px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm">
+            ↩️ {% trans "Volver al panel usuario" %}
+          </a>
+        </div>
+
+        <div class="pt-3 mt-3 border-t border-white/10">
+          <form method="post" action="{% url 'owner_panel:logout' %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full text-left px-3 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/20 border border-rose-500/30 text-sm font-semibold">
+              🚪 {% trans "Salir (Owner)" %}
+            </button>
+          </form>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Content Owner -->
+    <section class="min-w-0">
+      <header class="border-b border-white/10 bg-slate-950/40">
+        <div class="px-6 py-4 flex items-center justify-between gap-3">
+          <div>
+            <div class="text-sm text-slate-400">{% trans "Owner Admin" %}</div>
+            <div class="font-semibold">{{ request.user.username }}</div>
+          </div>
+
+          {# ✅ Cambiado: ya no usamos /i18n/setlang/ #}
+          <form action="{% url 'accounts:set_language' %}" method="post" class="flex items-center gap-2">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <select name="language"
+                    class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-white/20">
+              <option value="es" {% if request.LANGUAGE_CODE == "es" %}selected{% endif %}>Español</option>
+              <option value="en" {% if request.LANGUAGE_CODE == "en" %}selected{% endif %}>English</option>
+            </select>
+            <button class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-sm">
+              {% trans "Aplicar" %}
+            </button>
+          </form>
+        </div>
+      </header>
+
+      <main class="p-6">
+        {% if messages %}
+          <div class="space-y-2 mb-6">
+            {% for m in messages %}
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
+                {{ m }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </main>
+    </section>
+  </div>
+
+</body>
+</html>

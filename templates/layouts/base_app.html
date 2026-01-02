@@ -1,0 +1,284 @@
+{% load i18n %}
+<!doctype html>
+<html lang="{{ request.LANGUAGE_CODE|default:'es' }}">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Finanzas Bot{% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+
+  <div class="min-h-screen grid lg:grid-cols-[280px_1fr]">
+    <!-- Sidebar -->
+    <aside class="border-r border-white/10 bg-slate-950/60">
+      <div class="p-5 border-b border-white/10">
+        <a href="/usuarios/" class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-white/10 grid place-items-center border border-white/10">
+            <span class="text-lg">💸</span>
+          </div>
+          <div class="leading-tight">
+            <div class="font-semibold">Finanzas Bot</div>
+            <div class="text-xs text-slate-400">{% trans "Panel de Usuario" %}</div>
+          </div>
+        </a>
+      </div>
+
+      <nav class="p-3 space-y-1">
+        <a href="/usuarios/"
+           class="block px-3 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 text-sm">
+          📊 {% trans "Dashboard" %}
+        </a>
+
+        <!-- Movimientos -->
+        <a href="/movimientos/"
+           class="block px-3 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 text-sm
+                  {% if request.path|slice:':12' == '/movimientos/' %} bg-white/10 border-white/10 {% endif %}">
+          📒 {% trans "Movimientos" %}
+        </a>
+
+        <!-- Préstamos -->
+        <a href="/prestamos/"
+           class="block px-3 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 text-sm
+                  {% if request.path|slice:':10' == '/prestamos/' %} bg-white/10 border-white/10 {% endif %}">
+          🤝 {% trans "Préstamos" %}
+        </a>
+
+        <!-- ✅ Tarjetas -->
+        <a href="/cards/"
+           class="block px-3 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 text-sm
+                  {% if request.path|slice:':7' == '/cards/' %} bg-white/10 border-white/10 {% endif %}">
+          💳 {% trans "Tarjetas" %}
+        </a>
+
+        {# (Opcional) Presupuestos cuando quieras #}
+        
+        <a href="{% url 'budgets:list' %}"
+   class="block px-3 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 text-sm
+          {% if request.path|slice:':8' == '/budgets/' %} bg-white/10 border-white/10 {% endif %}">
+  🎯 {% trans "Presupuestos" %}
+</a>
+        
+
+        <a href="/usuarios/profile/"
+           class="block px-3 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 text-sm">
+          ⚙️ {% trans "Mi perfil" %}
+        </a>
+
+        <a href="/usuarios/telegram/link/"
+           class="block px-3 py-2 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10 text-sm">
+          🔗 {% trans "Vincular Telegram" %}
+        </a>
+
+        {# Owner Admin SOLO roles internos #}
+        {% if request.user.is_superuser or request.user.is_staff or profile.role == "admin" or profile.role == "support" or profile.role == "finance" %}
+          <div class="pt-3 mt-3 border-t border-white/10">
+            <a href="/owner/"
+               class="block px-3 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/20 border border-emerald-500/30 text-sm font-semibold">
+              🛡️ Owner Admin
+            </a>
+          </div>
+        {% endif %}
+
+        <div class="pt-3 mt-3 border-t border-white/10">
+          <form method="post" action="{% url 'accounts:logout' %}">
+            {% csrf_token %}
+            <button type="submit"
+                    class="w-full text-left px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm">
+              🚪 {% trans "Salir" %}
+            </button>
+          </form>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Content -->
+    <section class="min-w-0">
+      <header class="border-b border-white/10 bg-slate-950/40">
+        <div class="px-6 py-4 flex items-center justify-between gap-3">
+          <div>
+            <div class="text-sm text-slate-400">{% trans "Bienvenido" %}</div>
+            <div class="font-semibold">{{ request.user.username }}</div>
+          </div>
+
+          {# ✅ Cambiado: ahora pega el idioma también en UserProfile.language #}
+          <form action="{% url 'accounts:set_language' %}" method="post" class="flex items-center gap-2">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.path }}">
+            <select name="language"
+                    class="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-white/20">
+              <option value="es" {% if request.LANGUAGE_CODE == "es" %}selected{% endif %}>Español</option>
+              <option value="en" {% if request.LANGUAGE_CODE == "en" %}selected{% endif %}>English</option>
+            </select>
+            <button class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-sm">
+              {% trans "Aplicar" %}
+            </button>
+          </form>
+        </div>
+      </header>
+
+      <main class="p-6">
+        {% if messages %}
+          <div class="space-y-2 mb-6">
+            {% for m in messages %}
+              <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
+                {{ m }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </main>
+    </section>
+  </div>
+
+  <!-- ✅ Nice Confirm Modal -->
+  <div id="nice-confirm"
+       class="fixed inset-0 z-[9999] hidden"
+       aria-hidden="true">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+    <div class="absolute inset-0 grid place-items-center p-4">
+      <div class="w-full max-w-md rounded-3xl border border-white/10 bg-slate-950/90 shadow-2xl">
+        <div class="p-5 border-b border-white/10 flex items-start gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-white/10 border border-white/10 grid place-items-center shrink-0">
+            <span class="text-lg">⚠️</span>
+          </div>
+          <div class="min-w-0">
+            <div class="font-semibold leading-tight">{% trans "Confirmar acción" %}</div>
+            <div class="text-sm text-slate-300 mt-1" id="nice-confirm-message">—</div>
+          </div>
+        </div>
+
+        <div class="p-5 flex items-center justify-end gap-2">
+          <button type="button"
+                  id="nice-confirm-cancel"
+                  class="px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-sm">
+            {% trans "Cancelar" %}
+          </button>
+
+          <button type="button"
+                  id="nice-confirm-accept"
+                  class="px-4 py-2 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/25 border border-emerald-500/30 text-sm font-semibold">
+            {% trans "Aceptar" %}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const modal = document.getElementById("nice-confirm");
+      const msgEl = document.getElementById("nice-confirm-message");
+      const btnCancel = document.getElementById("nice-confirm-cancel");
+      const btnAccept = document.getElementById("nice-confirm-accept");
+
+      let pendingAction = null;
+
+      function openModal(message, onAccept) {
+        pendingAction = typeof onAccept === "function" ? onAccept : null;
+        msgEl.textContent = message || "¿Confirmas esta acción?";
+        modal.classList.remove("hidden");
+        modal.setAttribute("aria-hidden", "false");
+        setTimeout(() => btnAccept.focus(), 0);
+      }
+
+      function closeModal() {
+        modal.classList.add("hidden");
+        modal.setAttribute("aria-hidden", "true");
+        pendingAction = null;
+      }
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !modal.classList.contains("hidden")) {
+          e.preventDefault();
+          closeModal();
+        }
+      });
+
+      modal.addEventListener("click", function (e) {
+        if (e.target === modal || e.target === modal.firstElementChild) {
+          closeModal();
+        }
+      });
+
+      btnCancel.addEventListener("click", function () {
+        closeModal();
+      });
+
+      btnAccept.addEventListener("click", function () {
+        const fn = pendingAction;
+        closeModal();
+        if (fn) fn();
+      });
+
+      function extractConfirmMessage(jsCode) {
+        if (!jsCode) return null;
+        const m = jsCode.match(/confirm\s*\(\s*(['"])(.*?)\1\s*\)/i);
+        return m ? m[2] : null;
+      }
+
+      document.addEventListener("submit", function (e) {
+        const form = e.target;
+        if (!form || !(form instanceof HTMLFormElement)) return;
+        if (form.dataset.confirmBypass === "1") return;
+
+        const onsubmitAttr = form.getAttribute("onsubmit") || "";
+        const msg = extractConfirmMessage(onsubmitAttr);
+        if (!msg) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        openModal(msg, function () {
+          form.dataset.confirmBypass = "1";
+          form.removeAttribute("onsubmit");
+          form.submit();
+        });
+      }, true);
+
+      document.addEventListener("click", function (e) {
+        const el = e.target && e.target.closest ? e.target.closest("[onclick]") : null;
+        if (!el) return;
+
+        const onclickAttr = el.getAttribute("onclick") || "";
+        const msg = extractConfirmMessage(onclickAttr);
+        if (!msg) return;
+
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+
+        openModal(msg, function () {
+          if (el.tagName === "A" && el.href) {
+            el.removeAttribute("onclick");
+            window.location.href = el.href;
+            return;
+          }
+
+          const form = el.closest("form");
+          if (form) {
+            form.dataset.confirmBypass = "1";
+            form.removeAttribute("onsubmit");
+            el.removeAttribute("onclick");
+
+            if (typeof form.requestSubmit === "function") {
+              try { form.requestSubmit(el); return; } catch (err) {}
+            }
+            form.submit();
+            return;
+          }
+
+          el.removeAttribute("onclick");
+          el.click();
+        });
+      }, true);
+
+    })();
+  </script>
+
+</body>
+</html>

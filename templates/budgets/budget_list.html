@@ -1,0 +1,171 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+{% load money %}
+
+{% block title %}{% trans "Presupuestos" %} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold">🎯 {% trans "Presupuestos" %}</h1>
+      <p class="text-slate-300 text-sm">{% trans "Control mensual por categoría (estimado por palabras clave en tus movimientos)." %}</p>
+    </div>
+
+    <a href="{% url 'budgets:create' %}?month={{ month_value }}"
+       class="inline-flex items-center justify-center rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm">
+      ➕ {% trans "Nuevo presupuesto" %}
+    </a>
+  </div>
+
+  <!-- Selector de mes + totales -->
+  <form method="get" class="rounded-3xl border border-white/10 bg-white/5 p-4">
+    <div class="flex flex-wrap items-end gap-3">
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Mes" %}</label>
+        <input type="month" name="month" value="{{ month_value }}"
+               class="w-44 rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+      </div>
+
+      <button class="rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm">
+        {% trans "Aplicar" %}
+      </button>
+
+      <div class="ml-auto grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm w-full sm:w-auto">
+        <div class="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3">
+          <div class="text-xs text-slate-400">{% trans "Total presupuesto" %}</div>
+          <div class="text-lg font-semibold">{{ total_budget|money:"CLP" }} <span class="text-slate-400">CLP</span></div>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3">
+          <div class="text-xs text-slate-400">{% trans "Gastado (estimado)" %}</div>
+          <div class="text-lg font-semibold">{{ total_spent|money:"CLP" }} <span class="text-slate-400">CLP</span></div>
+        </div>
+        <div class="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3">
+          <div class="text-xs text-slate-400">{% trans "Restante" %}</div>
+          <div class="text-lg font-semibold">{{ total_remaining|money:"CLP" }} <span class="text-slate-400">CLP</span></div>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <!-- Tabla presupuestos -->
+  <div class="overflow-x-auto rounded-3xl border border-white/10 bg-slate-950/40">
+    <table class="min-w-full text-sm">
+      <thead class="border-b border-white/10 bg-slate-950/60">
+        <tr>
+          <th class="text-left p-3">{% trans "Categoría" %}</th>
+          <th class="text-right p-3">{% trans "Presupuesto" %}</th>
+          <th class="text-right p-3">{% trans "Gastado" %}</th>
+          <th class="text-right p-3">{% trans "Restante" %}</th>
+          <th class="text-left p-3">{% trans "Estado" %}</th>
+          <th class="text-right p-3">{% trans "Acciones" %}</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for r in rows %}
+          <tr class="border-b border-white/5">
+            <td class="p-3">
+              <div class="text-slate-200 font-semibold flex items-center gap-2 flex-wrap">
+                <span>{{ r.category.name }}</span>
+
+                <!-- ✅ NUEVO: editar categoría -->
+                <a href="{% url 'budgets:category_edit' r.category.id %}"
+                   class="text-xs text-sky-300 hover:text-sky-200 underline">
+                  ✏️ {% trans "Editar categoría" %}
+                </a>
+              </div>
+
+              {% if r.category.match_keywords %}
+                <div class="text-xs text-slate-400">{% trans "Keywords:" %} {{ r.category.match_keywords }}</div>
+              {% else %}
+                <div class="text-xs text-slate-500">{% trans "Sin keywords (gastado = 0)" %}</div>
+              {% endif %}
+            </td>
+
+            <td class="p-3 text-right font-semibold">
+              {{ r.budget_amount|money:"CLP" }} <span class="text-slate-400 font-normal">CLP</span>
+            </td>
+
+            <td class="p-3 text-right font-semibold">
+              {{ r.spent|money:"CLP" }} <span class="text-slate-400 font-normal">CLP</span>
+              {% if r.budget_amount > 0 %}
+                <div class="text-xs text-slate-400">≈ {{ r.pct|floatformat:0 }}%</div>
+              {% endif %}
+            </td>
+
+            <td class="p-3 text-right font-semibold">
+              {{ r.remaining|money:"CLP" }} <span class="text-slate-400 font-normal">CLP</span>
+            </td>
+
+            <td class="p-3">
+              {% if r.status == "over" %}
+                <span class="px-2 py-1 rounded-lg bg-rose-500/15 border border-rose-500/30">{% trans "Excedido" %}</span>
+              {% elif r.status == "near" %}
+                <span class="px-2 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30">{% trans "Cerca" %}</span>
+              {% else %}
+                <span class="px-2 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30">{% trans "OK" %}</span>
+              {% endif %}
+            </td>
+
+            <td class="p-3 text-right">
+              {% if r.budget %}
+                <div class="inline-flex items-center gap-2">
+                  <a href="{% url 'budgets:edit' r.budget.id %}"
+                     class="text-sky-300 hover:text-sky-200">{% trans "Editar" %}</a>
+
+                  <form method="post" action="{% url 'budgets:delete' r.budget.id %}" class="inline">
+                    {% csrf_token %}
+                    <button class="text-rose-300 hover:text-rose-200"
+                            onclick="return confirm('{% trans "¿Eliminar este presupuesto?" %}');">
+                      {% trans "Eliminar" %}
+                    </button>
+                  </form>
+                </div>
+              {% else %}
+                <a href="{% url 'budgets:create' %}?month={{ month_value }}"
+                   class="text-sky-300 hover:text-sky-200">{% trans "Crear" %}</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="p-4 text-slate-300">{% trans "No hay categorías aún." %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Crear categoría (MVP) -->
+  <div class="rounded-3xl border border-white/10 bg-white/5 p-6">
+    <h2 class="text-lg font-semibold mb-3">🏷️ {% trans "Crear categoría" %}</h2>
+    <form method="post" action="{% url 'budgets:category_create' %}" class="grid md:grid-cols-3 gap-3 items-end">
+      {% csrf_token %}
+      <input type="hidden" name="month" value="{{ month_value }}">
+
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Nombre" %}</label>
+        <input name="name" placeholder="{% trans "Ej: Comida" %}"
+               class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm" required>
+      </div>
+
+      <div>
+        <label class="text-xs text-slate-300">{% trans "Keywords (coma)" %}</label>
+        <input name="match_keywords" placeholder="{% trans "ej: uber, bencina, supermercado" %}"
+               class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+      </div>
+
+      <button class="rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm">
+        ➕ {% trans "Guardar" %}
+      </button>
+    </form>
+
+    <div class="text-xs text-slate-400 mt-3">
+      {% trans "TIP MVP: el gasto se estima por descripción. Si quieres precisión total, luego agregamos campo categoría en Transaction." %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

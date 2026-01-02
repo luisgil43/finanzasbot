@@ -1,0 +1,51 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+{% load money %}
+
+{% block title %}{{ card.name }} · {% trans "Tarjeta" %}{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-4xl">
+
+  <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold">💳 {{ card.name }}{% if card.last4 %} <span class="text-slate-400 font-normal">****{{ card.last4 }}</span>{% endif %}</h1>
+      <p class="text-slate-300 text-sm">
+        {% if card.bank %}{{ card.bank }}{% endif %}
+        {% if card.brand %}{% if card.bank %} · {% endif %}{{ card.brand }}{% endif %}
+      </p>
+    </div>
+
+    <div class="inline-flex items-center gap-2">
+      <a href="{% url 'cards:edit' card.id %}" class="rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm">
+        ✏️ {% trans "Editar" %}
+      </a>
+      <a href="{% url 'cards:list' %}" class="text-slate-300 hover:text-white text-sm">
+        ← {% trans "Volver" %}
+      </a>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-3 text-sm">
+    <div class="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3">
+      <div class="text-xs text-slate-400">{% trans "Límite / cupo" %}</div>
+      <div class="text-lg font-semibold">{{ card.credit_limit|money:"CLP" }} <span class="text-slate-400">CLP</span></div>
+    </div>
+    <div class="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3">
+      <div class="text-xs text-slate-400">{% trans "Usado (ciclo actual)" %}</div>
+      <div class="text-lg font-semibold">{{ spent|money:"CLP" }} <span class="text-slate-400">CLP</span></div>
+    </div>
+    <div class="rounded-2xl border border-white/10 bg-slate-950/40 px-4 py-3">
+      <div class="text-xs text-slate-400">{% trans "Disponible estimado" %}</div>
+      <div class="text-lg font-semibold">{{ available|money:"CLP" }} <span class="text-slate-400">CLP</span></div>
+    </div>
+  </div>
+
+  <div class="rounded-3xl border border-white/10 bg-white/5 p-6 text-sm text-slate-300">
+    <div class="text-xs text-slate-400">{% trans "Ciclo actual" %}</div>
+    <div class="mt-1">{{ cycle_start }} → {{ cycle_end }}</div>
+    <div class="text-xs text-slate-500 mt-2">{% trans "Corte" %}: {{ card.billing_day }} · {% trans "Pago" %}: {{ card.due_day }}</div>
+  </div>
+
+</div>
+{% endblock %}

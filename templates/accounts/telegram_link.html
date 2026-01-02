@@ -1,0 +1,26 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Vincular Telegram" %} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl">
+  <div class="rounded-3xl border border-white/10 bg-white/5 p-6">
+    <h1 class="text-2xl font-semibold mb-2">{% trans "Vincular Telegram" %}</h1>
+    <p class="text-sm text-slate-300 mb-6">
+      {% trans "Abre este enlace, presiona START y quedará vinculado tu usuario." %}
+    </p>
+
+    <a href="{{ deep_link }}" target="_blank"
+       class="inline-flex items-center gap-2 rounded-2xl px-4 py-3 bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 font-semibold">
+      🚀 {% trans "Abrir Telegram" %}
+    </a>
+
+    <div class="mt-4 text-xs text-slate-400 break-all">
+      <div class="mb-1">{% trans "Deep link" %}:</div>
+      <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-3">{{ deep_link }}</div>
+      <div class="mt-2">{% trans "Código" %}: <span class="font-mono">{{ code }}</span></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

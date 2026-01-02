@@ -1,0 +1,123 @@
+{% extends "layouts/base_app.html" %}
+{% load i18n %}
+{% load money %}
+
+{% block title %}{% trans "Préstamo" %} {{ loan.id }} · Finanzas Bot{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+  <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold">🤝 {% trans "Préstamo" %} #{{ loan.id }}</h1>
+      <p class="text-slate-300 text-sm">
+        {{ loan.person_name }} ·
+        {% if loan.direction == "lent" %}
+          {% trans "Presté (me deben)" %}
+        {% else %}
+          {% trans "Me prestaron (yo debo)" %}
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="flex gap-2">
+      <a href="{% url 'loans:list' %}" class="rounded-2xl border border-white/10 hover:bg-white/5 px-4 py-2 text-sm">← {% trans "Volver" %}</a>
+
+      {% if loan.status == "active" %}
+        <form method="post" action="{% url 'loans:close' loan.id %}">
+          {% csrf_token %}
+          <button class="rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm"
+                  onclick="return confirm('{% trans "¿Cerrar este préstamo?" %}');">
+            ✅ {% trans "Cerrar" %}
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="rounded-3xl border border-white/10 bg-white/5 p-6 grid sm:grid-cols-3 gap-4">
+    <div>
+      <div class="text-xs text-slate-400">{% trans "Monto" %}</div>
+      <div class="text-xl font-semibold">
+        {{ loan.principal_original|money:loan.currency_original }} {{ loan.currency_original }}
+      </div>
+      {% if loan.currency_original == "USD" %}
+        <div class="text-xs text-slate-400">≈ {{ loan.principal_clp|money:"CLP" }} CLP</div>
+      {% endif %}
+    </div>
+
+    <div>
+      <div class="text-xs text-slate-400">{% trans "Cuotas" %}</div>
+      <div class="text-xl font-semibold">{{ loan.installments_count }} · {{ loan.get_frequency_display }}</div>
+      <div class="text-xs text-slate-400">{% trans "1er venc:" %} {{ loan.first_due_date|default:"—" }}</div>
+    </div>
+
+    <div>
+      <div class="text-xs text-slate-400">{% trans "Estado" %}</div>
+      <div class="text-xl font-semibold">
+        {% if loan.status == "active" %}
+          {% trans "Activo" %}
+        {% elif loan.status == "closed" %}
+          {% trans "Cerrado" %}
+        {% else %}
+          {% trans "Cancelado" %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="overflow-x-auto rounded-3xl border border-white/10 bg-slate-950/40">
+    <table class="min-w-full text-sm">
+      <thead class="border-b border-white/10 bg-slate-950/60">
+        <tr>
+          <th class="text-left p-3">#</th>
+          <th class="text-left p-3">{% trans "Vence" %}</th>
+          <th class="text-right p-3">{% trans "Monto" %}</th>
+          <th class="text-left p-3">{% trans "Estado" %}</th>
+          <th class="text-right p-3">{% trans "Acción" %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for i in installments %}
+          <tr class="border-b border-white/5">
+            <td class="p-3 text-slate-300">{{ i.n }}</td>
+            <td class="p-3 text-slate-200 font-semibold">{{ i.due_date }}</td>
+
+            <td class="p-3 text-right font-semibold">
+              {{ i.amount_original|money:i.currency_original }} {{ i.currency_original }}
+              {% if i.currency_original == "USD" %}
+                <div class="text-xs text-slate-400">≈ {{ i.amount_clp|money:"CLP" }} CLP</div>
+              {% endif %}
+            </td>
+
+            <td class="p-3">
+              {% if i.status == "paid" %}
+                <span class="px-2 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30">{% trans "Pagada" %}</span>
+              {% elif i.status == "overdue" %}
+                <span class="px-2 py-1 rounded-lg bg-rose-500/15 border border-rose-500/30">{% trans "Atrasada" %}</span>
+              {% else %}
+                <span class="px-2 py-1 rounded-lg bg-slate-500/15 border border-slate-500/30">{% trans "Pendiente" %}</span>
+              {% endif %}
+            </td>
+
+            <td class="p-3 text-right">
+              {% if loan.status == "active" and i.status != "paid" %}
+                <form method="post" action="{% url 'loans:installment_pay' i.id %}" class="inline">
+                  {% csrf_token %}
+                  <button class="rounded-xl border border-white/10 bg-white/10 hover:bg-white/15 px-3 py-2 text-xs"
+                          onclick="return confirm('{% blocktrans with n=i.n %}¿Marcar cuota #{{ n }} como pagada?{% endblocktrans %}');">
+                    ✅ {% trans "Pagar" %}
+                  </button>
+                </form>
+              {% else %}
+                <span class="text-slate-500 text-xs">—</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}
