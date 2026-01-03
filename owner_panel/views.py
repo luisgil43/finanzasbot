@@ -8,8 +8,9 @@ from typing import Iterable, Optional
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model, logout
+from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.hashers import make_password
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import AbstractBaseUser, Group
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
 from django.shortcuts import redirect, render
@@ -74,16 +75,22 @@ def _roles_for_user(user) -> list[str]:
     return [r for r in STAFF_GROUPS if r in roles]
 
 
-def _dedupe_users(users: Iterable[User]) -> list[User]:
+def _dedupe_users(users):
+    """
+    Une listas de usuarios sin repetir (por id).
+    Funciona con tu CustomUser o cualquier modelo user con .id.
+    """
     seen = set()
     out = []
     for u in users:
-        if u.id in seen:
+        uid = getattr(u, "id", None)
+        if uid is None:
             continue
-        seen.add(u.id)
+        if uid in seen:
+            continue
+        seen.add(uid)
         out.append(u)
     return out
-
 
 def _ensure_groups(names: list[str]) -> list[Group]:
     """
@@ -98,7 +105,7 @@ def _ensure_groups(names: list[str]) -> list[Group]:
 
 def _get_plan_by_code(code: str) -> Optional[Plan]:
     code = (code or "").strip().lower()
-    if code not in (Plan.CODE_FREE, Plan.CODE_PLUS, Plan.CODE_PRO):
+    if code not in ("free", "plus", "pro"):
         return None
     return (
         Plan.objects.filter(code=code, is_active=True).first()
@@ -106,28 +113,37 @@ def _get_plan_by_code(code: str) -> Optional[Plan]:
     )
 
 
-def _get_or_create_active_subscription(u: User) -> UserSubscription:
+
+
+
+
+def _get_or_create_active_subscription(u) -> UserSubscription:
     """
-    Evita depender de métodos antiguos (get_or_create_for_user) y
-    soporta el nuevo esquema: UserSubscription.plan = FK Plan.
+    Obtiene la suscripción ACTIVA del usuario, o crea una FREE por defecto.
+    Robusto ante diferencias de constantes/seed.
     """
+    ACTIVE = getattr(UserSubscription, "STATUS_ACTIVE", "active")
+
     sub = (
         UserSubscription.objects
-        .filter(user=u, status=UserSubscription.STATUS_ACTIVE)
+        .filter(user=u, status=ACTIVE)
         .order_by("-started_at", "-id")
         .first()
     )
     if sub:
         return sub
 
-    free = _get_plan_by_code(Plan.CODE_FREE) or Plan.objects.order_by("id").first()
+    free = _get_plan_by_code("free") or Plan.objects.order_by("id").first()
+    if not free:
+        # Esto evita un 500 raro (plan=None) y te dice directo qué falta
+        raise RuntimeError("No hay planes en la BD. Ejecuta seed_plans (crear FREE/PLUS/PRO).")
+
     return UserSubscription.objects.create(
         user=u,
         plan=free,
-        status=UserSubscription.STATUS_ACTIVE,
+        status=ACTIVE,
         started_at=timezone.now(),
     )
-
 
 def _parse_date_yyyy_mm_dd(raw: str) -> Optional[date]:
     raw = (raw or "").strip()
@@ -248,7 +264,6 @@ def users(request):
 
     qs = (
         User.objects
-        .select_related("profile")
         .filter(is_superuser=False)
         .exclude(groups__name__in=STAFF_GROUPS)
         .distinct()
@@ -285,31 +300,34 @@ def users(request):
                 return redirect("owner_panel:users")
 
             sub.plan = plan_obj
-            sub.status = UserSubscription.STATUS_ACTIVE
+            sub.status = getattr(UserSubscription, "STATUS_ACTIVE", "active")
             sub.ends_at = None  # cambio manual => sin vencimiento
             sub.save(update_fields=["plan", "status", "ends_at"])
             messages.success(request, f"Plan actualizado a {plan_obj.code.upper()} ✅")
             return redirect("owner_panel:users")
 
-        # Mantengo tus actions, pero las implemento usando Plan + ends_at (sin campos comped_pro/comped_until)
         if action == "give_comped_pro":
             d = _parse_date_yyyy_mm_dd(request.POST.get("comped_until"))
-            pro = _get_plan_by_code(Plan.CODE_PRO)
+            pro = _get_plan_by_code("pro")  # evita depender de Plan.CODE_PRO si no existe
             if not pro:
                 messages.error(request, "No existe Plan PRO. Ejecuta seed_plans.")
                 return redirect("owner_panel:users")
 
             sub.plan = pro
-            sub.status = UserSubscription.STATUS_ACTIVE
+            sub.status = getattr(UserSubscription, "STATUS_ACTIVE", "active")
             sub.ends_at = _end_of_day_aware(d) if d else None
             sub.save(update_fields=["plan", "status", "ends_at"])
             messages.success(request, "Pro gratis aplicado ✅")
             return redirect("owner_panel:users")
 
         if action == "remove_comped":
-            free = _get_plan_by_code(Plan.CODE_FREE) or Plan.objects.order_by("id").first()
+            free = _get_plan_by_code("free") or Plan.objects.order_by("id").first()
+            if not free:
+                messages.error(request, "No hay Plan FREE en la BD. Ejecuta seed_plans.")
+                return redirect("owner_panel:users")
+
             sub.plan = free
-            sub.status = UserSubscription.STATUS_ACTIVE
+            sub.status = getattr(UserSubscription, "STATUS_ACTIVE", "active")
             sub.ends_at = None
             sub.save(update_fields=["plan", "status", "ends_at"])
             messages.success(request, "Pro gratis removido ✅")
@@ -329,7 +347,6 @@ def users(request):
         })
 
     return render(request, "owner/users.html", {"rows": rows, "can_manage": can_manage})
-
 
 @staff_required
 def staff(request):
