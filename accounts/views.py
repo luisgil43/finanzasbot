@@ -10,6 +10,7 @@ from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.db.models import Sum
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, render
@@ -313,6 +314,9 @@ def profile(request):
     return render(request, "accounts/profile.html", {"profile": prof})
 
 
+
+
+
 @login_required
 def telegram_link(request):
     if not getattr(settings, "TELEGRAM_BOT_USERNAME", ""):
@@ -321,11 +325,20 @@ def telegram_link(request):
 
     from accounts.models import UserProfile
 
-    code = secrets.token_urlsafe(16)
-
     prof, _ = UserProfile.objects.get_or_create(user=request.user)
-    prof.telegram_link_code = code
-    prof.save(update_fields=["telegram_link_code"])
+
+    # ✅ Generar código único (por si acaso)
+    for _ in range(5):
+        code = secrets.token_urlsafe(16)
+        prof.telegram_link_code = code
+        try:
+            prof.save(update_fields=["telegram_link_code"])
+            break
+        except IntegrityError:
+            continue
+    else:
+        messages.error(request, "No pudimos generar un código único. Intenta nuevamente.")
+        return redirect("accounts:dashboard")
 
     deep_link = f"https://t.me/{settings.TELEGRAM_BOT_USERNAME}?start={code}"
     start_command = f"/start {code}"
@@ -336,7 +349,7 @@ def telegram_link(request):
         {
             "deep_link": deep_link,
             "code": code,
-            "start_command": start_command,  # ✅ NUEVO
+            "start_command": start_command,
             "profile": prof,
         },
     )
