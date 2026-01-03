@@ -70,11 +70,20 @@
               <div class="text-slate-200 font-semibold flex items-center gap-2 flex-wrap">
                 <span>{{ r.category.name }}</span>
 
-                <!-- ✅ NUEVO: editar categoría -->
                 <a href="{% url 'budgets:category_edit' r.category.id %}"
-                   class="text-xs text-sky-300 hover:text-sky-200 underline">
-                  ✏️ {% trans "Editar categoría" %}
-                </a>
+   class="text-xs text-sky-300 hover:text-sky-200 underline">
+  ✏️ {% trans "Editar categoría" %}
+</a>
+
+<form method="post" action="{% url 'budgets:category_delete' r.category.id %}" class="inline">
+  {% csrf_token %}
+  <input type="hidden" name="month" value="{{ month_value }}">
+  <button type="submit"
+          class="text-xs text-rose-300 hover:text-rose-200 underline"
+          onclick="return confirm('{% trans "¿Eliminar esta categoría? También se eliminarán sus presupuestos asociados." %}');">
+    🗑️ {% trans "Eliminar categoría" %}
+  </button>
+</form>
               </div>
 
               {% if r.category.match_keywords %}

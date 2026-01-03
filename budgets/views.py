@@ -6,11 +6,14 @@ from typing import Optional
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db import transaction
 from django.db.models import Q, Sum
+from django.db.models.deletion import ProtectedError
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.views.decorators.http import require_POST
 
 from budgets.models import BudgetCategory, MonthlyBudget, month_start
 from transactions.models import Transaction
@@ -88,7 +91,13 @@ def budget_list(request):
     month_val = request.GET.get("month") or ""
     month_date = _parse_month_yyyy_mm(month_val)
 
-    categories = BudgetCategory.objects.filter(user=request.user, is_active=True).order_by("name", "id")
+    # ✅ Auto-copia: completa presupuestos del mes si faltan (desde el último mes anterior con datos)
+    _autoseed_month_budgets(request.user, month_date)
+
+    categories = BudgetCategory.objects.filter(
+        user=request.user,
+        is_active=True
+    ).order_by("name", "id")
 
     budgets = (
         MonthlyBudget.objects
@@ -325,3 +334,88 @@ def category_edit(request, pk):
         return redirect("budgets:list")
 
     return render(request, "budgets/category_form.html", {"cat": cat})
+
+
+@login_required
+@require_POST
+def category_delete(request, pk: int):
+    """
+    Elimina una categoría del usuario.
+    - Si existen MonthlyBudget asociados a esa categoría, los elimina primero.
+    - Luego elimina la BudgetCategory.
+    - Redirige a /budgets/ manteniendo el month si viene en POST.
+    """
+    cat = get_object_or_404(BudgetCategory, user=request.user, pk=pk)
+
+    next_month = (request.POST.get("month") or "").strip()  # para volver al mismo mes si aplica
+    redirect_url = f"/budgets/?month={next_month}" if next_month else "/budgets/"
+
+    try:
+        with transaction.atomic():
+            # 1) borra presupuestos ligados a esa categoría (si hay)
+            MonthlyBudget.objects.filter(user=request.user, category=cat).delete()
+
+            # 2) borra la categoría
+            cat.delete()
+
+        messages.success(request, _("Categoría eliminada 🗑️"))
+        return redirect(redirect_url)
+
+    except ProtectedError:
+        # Si tu modelo tiene PROTECT en algún lado y no deja borrar
+        messages.error(
+            request,
+            _("No se puede eliminar la categoría porque tiene registros asociados.")
+        )
+        return redirect(redirect_url)
+
+    except Exception as e:
+        messages.error(request, _("Error eliminando categoría: %(err)s") % {"err": str(e)})
+        return redirect(redirect_url)
+    
+
+from django.db import transaction
+
+from budgets.models import MonthlyBudget, month_start
+
+
+def _autoseed_month_budgets(user, target_month_date):
+    """
+    Auto-copia presupuestos hacia el mes target:
+    - Busca el último mes anterior donde el user tenga presupuestos.
+    - Para cada presupuesto de ese mes, crea el del mes target SOLO si no existe.
+    - No sobrescribe si el user ya editó/cambió algo en el mes target.
+    - Si el mes target tiene algunos presupuestos, completa los faltantes.
+    """
+    target_month = month_start(target_month_date)
+
+    # Buscar último mes anterior con presupuestos
+    src_month = (
+        MonthlyBudget.objects
+        .filter(user=user, month__lt=target_month)
+        .order_by("-month")
+        .values_list("month", flat=True)
+        .first()
+    )
+    if not src_month:
+        return  # nunca ha creado presupuestos antes
+
+    src_budgets = list(
+        MonthlyBudget.objects
+        .filter(user=user, month=src_month)
+        .select_related("category")
+    )
+    if not src_budgets:
+        return
+
+    with transaction.atomic():
+        for b in src_budgets:
+            MonthlyBudget.objects.get_or_create(
+                user=user,
+                category=b.category,
+                month=target_month,
+                defaults={
+                    "amount_clp": b.amount_clp,
+                    "note": b.note or "",
+                },
+            )
