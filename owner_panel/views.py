@@ -118,10 +118,6 @@ def _get_plan_by_code(code: str) -> Optional[Plan]:
 
 
 def _get_or_create_active_subscription(u) -> UserSubscription:
-    """
-    Obtiene la suscripción ACTIVA del usuario, o crea una FREE por defecto.
-    Robusto ante diferencias de constantes/seed.
-    """
     ACTIVE = getattr(UserSubscription, "STATUS_ACTIVE", "active")
 
     sub = (
@@ -133,10 +129,13 @@ def _get_or_create_active_subscription(u) -> UserSubscription:
     if sub:
         return sub
 
-    free = _get_plan_by_code("free") or Plan.objects.order_by("id").first()
+    # Asegura que exista un Plan FREE aunque la BD esté vacía
+    free = _get_plan_by_code("free")
     if not free:
-        # Esto evita un 500 raro (plan=None) y te dice directo qué falta
-        raise RuntimeError("No hay planes en la BD. Ejecuta seed_plans (crear FREE/PLUS/PRO).")
+        free, _ = Plan.objects.get_or_create(
+            code="free",
+            defaults={"name": "FREE", "is_active": True},
+        )
 
     return UserSubscription.objects.create(
         user=u,
