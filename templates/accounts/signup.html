@@ -9,21 +9,129 @@
     <h1 class="text-3xl font-semibold mb-2">{% trans "Crear cuenta" %}</h1>
     <p class="text-slate-300 mb-8">{% trans "Te enviaremos un link para verificar tu correo." %}</p>
 
+    {% if form.non_field_errors %}
+      <div class="mb-4 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+        {% for e in form.non_field_errors %}
+          <div>{{ e }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
     <form method="post" class="space-y-4">
       {% csrf_token %}
-      <!-- Usamos tu form actual, pero lo encapsulamos bonito -->
-      <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
-        {{ form.as_p }}
+
+      <!-- Username -->
+      <div class="space-y-2">
+        <label class="text-sm text-slate-300">{% trans "Nombre de usuario" %}</label>
+        <input name="username"
+               value="{{ form.username.value|default:'' }}"
+               required
+               autocomplete="username"
+               class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 text-slate-100 outline-none focus:ring-2 focus:ring-white/20"
+               placeholder="tu_usuario">
+
+        {% if form.username.errors %}
+          {% for e in form.username.errors %}
+            <div class="text-xs text-rose-300">{{ e }}</div>
+          {% endfor %}
+        {% else %}
+          <div class="text-xs text-slate-400">{% trans "Solo letras, dígitos y @/./+/-/_ (máx 150)." %}</div>
+        {% endif %}
       </div>
 
-      <button class="w-full rounded-2xl px-4 py-3 bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 font-semibold">
+      <!-- Nombre + Apellido -->
+      <div class="grid sm:grid-cols-2 gap-3">
+        <div class="space-y-2">
+          <label class="text-sm text-slate-300">{% trans "Nombre" %}</label>
+          <input name="first_name"
+                 value="{{ form.first_name.value|default:'' }}"
+                 required
+                 autocomplete="given-name"
+                 class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 text-slate-100 outline-none focus:ring-2 focus:ring-white/20"
+                 placeholder="Luis">
+          {% for e in form.first_name.errors %}
+            <div class="text-xs text-rose-300">{{ e }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-sm text-slate-300">{% trans "Apellido" %}</label>
+          <input name="last_name"
+                 value="{{ form.last_name.value|default:'' }}"
+                 required
+                 autocomplete="family-name"
+                 class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 text-slate-100 outline-none focus:ring-2 focus:ring-white/20"
+                 placeholder="Gil">
+          {% for e in form.last_name.errors %}
+            <div class="text-xs text-rose-300">{{ e }}</div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Fecha nacimiento -->
+      <div class="space-y-2">
+        <label class="text-sm text-slate-300">{% trans "Fecha de nacimiento" %}</label>
+        <input type="date"
+               name="birth_date"
+               value="{{ form.birth_date.value|date:'Y-m-d' }}"
+               required
+               class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 text-slate-100 outline-none focus:ring-2 focus:ring-white/20">
+        {% for e in form.birth_date.errors %}
+          <div class="text-xs text-rose-300">{{ e }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- Email -->
+      <div class="space-y-2">
+        <label class="text-sm text-slate-300">{% trans "Email" %}</label>
+        <input type="email"
+               name="email"
+               value="{{ form.email.value|default:'' }}"
+               required
+               autocomplete="email"
+               class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 text-slate-100 outline-none focus:ring-2 focus:ring-white/20"
+               placeholder="tu@correo.com">
+        {% for e in form.email.errors %}
+          <div class="text-xs text-rose-300">{{ e }}</div>
+        {% endfor %}
+      </div>
+
+      <!-- Password -->
+      <div class="space-y-2">
+        <label class="text-sm text-slate-300">{% trans "Contraseña" %}</label>
+        <input type="password"
+               name="password1"
+               required
+               autocomplete="new-password"
+               class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 text-slate-100 outline-none focus:ring-2 focus:ring-white/20"
+               placeholder="••••••••">
+        {% for e in form.password1.errors %}
+          <div class="text-xs text-rose-300">{{ e }}</div>
+        {% endfor %}
+      </div>
+
+      <div class="space-y-2">
+        <label class="text-sm text-slate-300">{% trans "Contraseña (confirmación)" %}</label>
+        <input type="password"
+               name="password2"
+               required
+               autocomplete="new-password"
+               class="w-full bg-slate-950/60 border border-white/10 rounded-2xl px-4 py-3 text-slate-100 outline-none focus:ring-2 focus:ring-white/20"
+               placeholder="••••••••">
+        {% for e in form.password2.errors %}
+          <div class="text-xs text-rose-300">{{ e }}</div>
+        {% endfor %}
+      </div>
+
+      <button type="submit"
+              class="w-full rounded-2xl px-4 py-3 bg-emerald-500/90 hover:bg-emerald-500 text-slate-950 font-semibold">
         {% trans "Registrarme" %}
       </button>
     </form>
 
     <div class="mt-6 text-sm text-slate-300">
       {% trans "¿Ya tienes cuenta?" %}
-      <a class="underline hover:text-white" href="/usuarios/login/">{% trans "Iniciar sesión" %}</a>
+      <a class="underline hover:text-white" href="{% url 'accounts:login' %}">{% trans "Iniciar sesión" %}</a>
     </div>
   </div>
 </div>

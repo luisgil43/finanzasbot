@@ -1,5 +1,4 @@
 # transactions/views.py
-
 from __future__ import annotations
 
 from decimal import Decimal, InvalidOperation
@@ -41,7 +40,6 @@ def transaction_list(request):
     date_from = (request.GET.get("from") or "").strip()
     date_to = (request.GET.get("to") or "").strip()
 
-    # 👇 NUEVO
     card_id = (request.GET.get("card") or "").strip()
 
     if kind in (Transaction.KIND_EXPENSE, Transaction.KIND_INCOME):
@@ -53,14 +51,12 @@ def transaction_list(request):
     if q:
         qs = qs.filter(Q(description__icontains=q))
 
-    # 👇 NUEVO: filtro por tarjeta
     if card_id:
         try:
             qs = qs.filter(card_id=int(card_id))
         except Exception:
             pass
 
-    # fechas (YYYY-MM-DD)
     if date_from:
         try:
             d = timezone.datetime.fromisoformat(date_from).date()
@@ -78,7 +74,6 @@ def transaction_list(request):
     paginator = Paginator(qs, 25)
     page = paginator.get_page(request.GET.get("page") or 1)
 
-    # 👇 NUEVO: tarjetas para filtro (todas, activas o no)
     cards = Card.objects.filter(user=request.user).order_by("-is_active", "name")
 
     return render(
@@ -91,15 +86,14 @@ def transaction_list(request):
             "q": q,
             "date_from": date_from,
             "date_to": date_to,
-            "cards": cards,     # 👈 NUEVO
-            "card_id": card_id, # 👈 NUEVO
+            "cards": cards,
+            "card_id": card_id,
         },
     )
 
 
 @login_required
 def transaction_create(request):
-    # mostramos tarjetas activas para asignar (si quieres mostrar inactivas también dime)
     cards = Card.objects.filter(user=request.user, is_active=True).order_by("name")
 
     if request.method == "POST":
@@ -109,7 +103,6 @@ def transaction_create(request):
         desc = (request.POST.get("description") or "").strip()
         occurred_at_raw = (request.POST.get("occurred_at") or "").strip()
 
-        # 👇 NUEVO
         card_id_raw = (request.POST.get("card_id") or "").strip()
         card_obj = None
         if card_id_raw:
@@ -120,7 +113,7 @@ def transaction_create(request):
                 return render(
                     request,
                     "transactions/transaction_form.html",
-                    {"cards": cards, "selected_card_id": card_id_raw},
+                    {"cards": cards, "selected_card_id": card_id_raw, "mode": "create"},
                 )
 
         if kind not in (Transaction.KIND_EXPENSE, Transaction.KIND_INCOME):
@@ -134,15 +127,13 @@ def transaction_create(request):
             return render(
                 request,
                 "transactions/transaction_form.html",
-                {"cards": cards, "selected_card_id": card_id_raw},
+                {"cards": cards, "selected_card_id": card_id_raw, "mode": "create"},
             )
 
         occurred_at = timezone.now()
         if occurred_at_raw:
             try:
-                occurred_at = timezone.make_aware(
-                    timezone.datetime.fromisoformat(occurred_at_raw)
-                )
+                occurred_at = timezone.make_aware(timezone.datetime.fromisoformat(occurred_at_raw))
             except Exception:
                 occurred_at = timezone.now()
 
@@ -152,7 +143,6 @@ def transaction_create(request):
             fx_rate = (fx.rate or Decimal("1"))
             if fx_rate <= 0:
                 fx_rate = Decimal("1")
-
             amount_clp = (amount * fx_rate).quantize(Decimal("1"))
             fx_source = fx.source or "fx"
             fx_timestamp = timezone.now()
@@ -174,13 +164,118 @@ def transaction_create(request):
             description=desc,
             source="web",
             occurred_at=occurred_at,
-            card=card_obj,  # 👈 NUEVO
+            card=card_obj,
         )
 
         messages.success(request, _("Movimiento creado (ID %(id)s) ✅") % {"id": tx.id})
         return redirect("transactions:list")
 
-    return render(request, "transactions/transaction_form.html", {"cards": cards})
+    return render(request, "transactions/transaction_form.html", {"cards": cards, "mode": "create"})
+
+
+@login_required
+def transaction_edit(request, pk: int):
+    tx = get_object_or_404(Transaction, pk=pk, user=request.user)
+
+    # al editar, permitimos seleccionar cualquier tarjeta del usuario (activa o no)
+    cards = Card.objects.filter(user=request.user).order_by("-is_active", "name")
+
+    if request.method == "POST":
+        kind = (request.POST.get("kind") or tx.kind).strip()
+        currency = (request.POST.get("currency_original") or tx.currency_original or "CLP").strip()
+        amount = _parse_decimal(request.POST.get("amount_original") or "")
+        desc = (request.POST.get("description") or "").strip()
+        occurred_at_raw = (request.POST.get("occurred_at") or "").strip()
+
+        card_id_raw = (request.POST.get("card_id") or "").strip()
+        card_obj = None
+        if card_id_raw:
+            try:
+                card_obj = Card.objects.get(pk=int(card_id_raw), user=request.user)
+            except Exception:
+                messages.error(request, _("Tarjeta inválida."))
+                return render(
+                    request,
+                    "transactions/transaction_form.html",
+                    {
+                        "cards": cards,
+                        "mode": "edit",
+                        "tx": tx,
+                        "selected_card_id": card_id_raw,
+                    },
+                )
+
+        if kind not in (Transaction.KIND_EXPENSE, Transaction.KIND_INCOME):
+            kind = Transaction.KIND_EXPENSE
+
+        if currency not in ("CLP", "USD"):
+            currency = "CLP"
+
+        if amount is None or amount <= 0:
+            messages.error(request, _("Monto inválido."))
+            return render(
+                request,
+                "transactions/transaction_form.html",
+                {
+                    "cards": cards,
+                    "mode": "edit",
+                    "tx": tx,
+                    "selected_card_id": card_id_raw,
+                },
+            )
+
+        occurred_at = tx.occurred_at
+        if occurred_at_raw:
+            try:
+                occurred_at = timezone.make_aware(timezone.datetime.fromisoformat(occurred_at_raw))
+            except Exception:
+                occurred_at = tx.occurred_at
+
+        # recalcular CLP base si cambia monto/moneda
+        if currency == "USD":
+            fx = get_usd_to_clp()
+            fx_rate = (fx.rate or Decimal("1"))
+            if fx_rate <= 0:
+                fx_rate = Decimal("1")
+            amount_clp = (amount * fx_rate).quantize(Decimal("1"))
+            fx_source = fx.source or "fx"
+            fx_timestamp = timezone.now()
+        else:
+            amount_clp = Decimal(amount).quantize(Decimal("1"))
+            fx_rate = Decimal("1")
+            fx_source = "base"
+            fx_timestamp = timezone.now()
+
+        tx.kind = kind
+        tx.currency_original = currency
+        tx.amount_original = amount
+        tx.amount_clp = amount_clp
+        tx.fx_rate = fx_rate
+        tx.fx_source = fx_source
+        tx.fx_timestamp = fx_timestamp
+        tx.description = desc
+        tx.occurred_at = occurred_at
+        tx.card = card_obj
+        tx.save()
+
+        messages.success(request, _("Movimiento actualizado ✅"))
+        return redirect("transactions:list")
+
+    # GET: precargar form
+    occurred_at_local = timezone.localtime(tx.occurred_at) if tx.occurred_at else timezone.localtime(timezone.now())
+    occurred_at_str = occurred_at_local.strftime("%Y-%m-%dT%H:%M")
+
+    return render(
+        request,
+        "transactions/transaction_form.html",
+        {
+            "cards": cards,
+            "mode": "edit",
+            "tx": tx,
+            "selected_card_id": str(tx.card_id or ""),
+            "occurred_at_str": occurred_at_str,
+        },
+    )
 
 
 @login_required

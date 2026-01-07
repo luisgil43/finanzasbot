@@ -33,6 +33,9 @@ class UserProfile(models.Model):
     # Código para vincular Telegram desde web -> /start CODE
     telegram_link_code = models.CharField(max_length=64, blank=True, null=True)  # 👈 ya NO unique=True
 
+    # ✅ NUEVO: Fecha de nacimiento (para analytics por rango de edad)
+    birth_date = models.DateField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

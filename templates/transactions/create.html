@@ -1,13 +1,18 @@
 {% extends "layouts/base_app.html" %}
 {% load i18n %}
 
-{% block title %}{% trans "Nuevo movimiento" %} · Finanzas Bot{% endblock %}
+{% block title %}
+  {% if mode == "edit" %}{% trans "Editar movimiento" %}{% else %}{% trans "Nuevo movimiento" %}{% endif %}
+  · Finanzas Bot
+{% endblock %}
 
 {% block content %}
 <div class="max-w-2xl space-y-6">
 
   <div>
-    <h1 class="text-2xl font-semibold">➕ {% trans "Nuevo movimiento" %}</h1>
+    <h1 class="text-2xl font-semibold">
+      {% if mode == "edit" %}✏️ {% trans "Editar movimiento" %}{% else %}➕ {% trans "Nuevo movimiento" %}{% endif %}
+    </h1>
     <p class="text-slate-300 text-sm">{% trans "Registra manualmente un gasto o ingreso (se normaliza a CLP)." %}</p>
   </div>
 
@@ -18,38 +23,103 @@
       <div>
         <label class="text-xs text-slate-300">{% trans "Tipo" %}</label>
         <select name="kind" class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
-          <option value="expense">{% trans "Gasto" %}</option>
-          <option value="income">{% trans "Ingreso" %}</option>
+          <option value="expense"
+                  {% if request.POST.kind %}
+                    {% if request.POST.kind == "expense" %}selected{% endif %}
+                  {% elif tx and tx.kind == "expense" %}
+                    selected
+                  {% endif %}>
+            {% trans "Gasto" %}
+          </option>
+
+          <option value="income"
+                  {% if request.POST.kind %}
+                    {% if request.POST.kind == "income" %}selected{% endif %}
+                  {% elif tx and tx.kind == "income" %}
+                    selected
+                  {% endif %}>
+            {% trans "Ingreso" %}
+          </option>
         </select>
       </div>
 
       <div>
         <label class="text-xs text-slate-300">{% trans "Moneda" %}</label>
         <select name="currency_original" class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
-          <option value="CLP">CLP</option>
-          <option value="USD">USD</option>
+          <option value="CLP"
+                  {% if request.POST.currency_original %}
+                    {% if request.POST.currency_original == "CLP" %}selected{% endif %}
+                  {% elif tx and tx.currency_original == "CLP" %}
+                    selected
+                  {% elif not tx %}
+                    selected
+                  {% endif %}>
+            CLP
+          </option>
+
+          <option value="USD"
+                  {% if request.POST.currency_original %}
+                    {% if request.POST.currency_original == "USD" %}selected{% endif %}
+                  {% elif tx and tx.currency_original == "USD" %}
+                    selected
+                  {% endif %}>
+            USD
+          </option>
         </select>
       </div>
+    </div>
+
+    <!-- ✅ Tarjeta (opcional) -->
+    <div>
+      <label class="text-xs text-slate-300">{% trans "Tarjeta (opcional)" %}</label>
+      <select name="card_id"
+              class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+        <option value="">{% trans "Sin tarjeta" %}</option>
+
+        {% for c in cards %}
+          {% with cid=c.id|stringformat:"s" %}
+            <option value="{{ c.id }}"
+              {% if request.POST.card_id %}
+                {% if request.POST.card_id == cid %}selected{% endif %}
+              {% elif selected_card_id %}
+                {% if selected_card_id|stringformat:"s" == cid %}selected{% endif %}
+              {% elif tx and tx.card_id %}
+                {% if tx.card_id|stringformat:"s" == cid %}selected{% endif %}
+              {% endif %}>
+              {{ c.name }}{% if c.last4 %} • ****{{ c.last4 }}{% endif %}
+            </option>
+          {% endwith %}
+        {% endfor %}
+      </select>
     </div>
 
     <div class="grid sm:grid-cols-2 gap-3">
       <div>
         <label class="text-xs text-slate-300">{% trans "Monto" %}</label>
-        <input name="amount_original" placeholder="{% trans 'Ej: 320.240 o 32 USD' %}"
-               class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm" required>
+        <input name="amount_original"
+               value="{% if request.POST.amount_original %}{{ request.POST.amount_original }}{% elif tx %}{{ tx.amount_original }}{% endif %}"
+               placeholder="{% trans 'Ej: 320.240 o 32 USD' %}"
+               class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm"
+               required>
         <div class="text-xs text-slate-400 mt-1">{% trans "Tip: puedes escribir con puntos de miles." %}</div>
       </div>
 
       <div>
         <label class="text-xs text-slate-300">{% trans "Fecha y hora" %}</label>
         <input type="datetime-local" name="occurred_at"
+               value="{% if request.POST.occurred_at %}{{ request.POST.occurred_at }}{% else %}{{ occurred_at_str|default:'' }}{% endif %}"
                class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
+        <div class="text-xs text-slate-400 mt-1">
+          {% trans "Si lo dejas vacío, se mantiene (editar) o se usa la fecha actual (crear)." %}
+        </div>
       </div>
     </div>
 
     <div>
       <label class="text-xs text-slate-300">{% trans "Descripción" %}</label>
-      <input name="description" placeholder="{% trans 'Uber, Sueldo, Mercado...' %}"
+      <input name="description"
+             value="{% if request.POST.description %}{{ request.POST.description }}{% elif tx %}{{ tx.description|default:'' }}{% endif %}"
+             placeholder="{% trans 'Uber, Sueldo, Mercado...' %}"
              class="w-full rounded-xl bg-slate-950/40 border border-white/10 px-3 py-2 text-sm">
     </div>
 
@@ -57,11 +127,13 @@
       <button class="rounded-2xl border border-white/10 bg-white/10 hover:bg-white/15 px-4 py-2 text-sm">
         {% trans "Guardar" %} ✅
       </button>
+
       <a href="{% url 'transactions:list' %}"
          class="rounded-2xl border border-white/10 bg-transparent hover:bg-white/5 px-4 py-2 text-sm">
         {% trans "Volver" %}
       </a>
     </div>
+
   </form>
 
 </div>

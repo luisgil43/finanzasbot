@@ -25,6 +25,20 @@ from subscriptions.utils import has_feature
 from transactions.fx import get_usd_to_clp
 from transactions.models import Transaction
 
+# ✅ NUEVO: Budgets (usa tu modelo real)
+try:
+    from budgets.models import (BudgetCategory, MonthlyBudget,  # type: ignore
+                                month_start)
+except Exception:
+    BudgetCategory = None
+    MonthlyBudget = None
+
+    def month_start(d):  # fallback
+        if not d:
+            d = timezone.localdate()
+        return d.replace(day=1)
+
+
 from .models import TelegramConversation, TelegramLink
 
 logger = logging.getLogger(__name__)
@@ -181,6 +195,46 @@ _MSG = {
         "tx_edit_kind_ask": "🔄 ¿Qué es? Responde: Gasto o Ingreso.\nC) Cancelar",
         "tx_need_card_for_payment": "Para registrar un pago de tarjeta necesito que elijas una tarjeta. Si no tienes, crea una en la web (Cards).",
 
+        # ✅ NUEVO: Categorías / Presupuestos
+        "cat_unknown": (
+            "🔎 No encontré una categoría para: *{kw}*\n\n"
+            "¿Qué quieres hacer?\n"
+            "1) Asociar a una categoría existente\n"
+            "2) Crear una nueva categoría\n"
+            "0) Dejar sin categoría\n"
+            "C) Cancelar"
+        ),
+        "cat_pick_existing": (
+            "📌 Elige una categoría para asociar *{kw}*.\n"
+            "Responde con 1, 2, 3...\n\n"
+            "{cats}\n\n"
+            "C) Cancelar"
+        ),
+        "cat_new_ask_name": (
+            "🆕 Perfecto. ¿Cómo se llama la nueva categoría?\n"
+            "Ej: Transporte, Comida, Supermercado...\n"
+            "C) Cancelar"
+        ),
+        "cat_new_pick_existing_budget": (
+            "📆 ¿Quieres crear el presupuesto mensual de esta categoría?\n"
+            "Elige una opción:\n\n"
+            "{buds}\n\n"
+            "N) Definir un monto nuevo\n"
+            "0) No crear presupuesto ahora\n"
+            "C) Cancelar"
+        ),
+        "cat_new_ask_amount": (
+            "💰 ¿Cuál es el presupuesto mensual (CLP) para esta categoría?\n"
+            "Ej: 150000\n"
+            "C) Cancelar"
+        ),
+        "cat_linked_ok": "✅ Listo. Asocié *{kw}* a la categoría: {cat}.",
+        "cat_created_ok": "✅ Categoría creada: {cat}.",
+        "cat_skipped": "👌 Ok, dejo el gasto sin categoría.",
+        "cat_invalid": "No entendí. Responde con 1, 2, 3... o C para cancelar.",
+        "cat_no_categories": "No tienes categorías creadas aún. Elige 2 para crear una nueva.",
+        "cat_no_budgets": "No encontré presupuestos mensuales creados para este mes. Puedes definir un monto nuevo (N) o 0 para saltar.",
+
         # ---- OCR ----
         "ocr_result_header": "🧾 Texto detectado en la foto:",
         "ocr_no_text": (
@@ -246,23 +300,15 @@ _MSG = {
             "5) 🗑️ Delete\n"
             "   Delete 123\n"
             "   Delete last\n\n"
-            "Card tip: to link a card to an expense, add the bank at the end.\n"
-            "Example: Expense 12000 Uber Itau\n"
-            "If there are multiple, I’ll ask which one.\n\n"
             "You can cancel anytime with: C"
         ),
         "tx_parse_fail": (
             "I couldn’t understand your message.\n\n"
             "Options:\n"
             "1) 🧾 Record expense or income\n"
-            "   - One message: Expense 3290 Uber  |  Income 500000 Salary\n"
-            "   - Step by step: send Expense or Income\n\n"
             "2) 💳 Card payment\n"
-            "   - One message: Card payment 120000 Itau\n"
-            "   - Step by step: send Card payment\n\n"
-            "3) 🤝 Loan: Loan 45000 to Rosa\n"
-            "4) 🔎 Queries: Movements today  |  Summary 2025-12\n\n"
-            "Tip: for USD add USD or $.\n"
+            "3) 🤝 Loan\n"
+            "4) 🔎 Queries\n\n"
             "You can cancel anytime with: C"
         ),
         "tx_saved": "✅ Saved: {label} {amount} {cur}{approx} · {desc}\nID: {id}",
@@ -334,24 +380,45 @@ _MSG = {
         "tx_cancel_ok": "🚫 Ok, canceled. Nothing was saved.",
         "tx_edit_amount_ask": "💰 Tell me the amount. Examples: 3290  |  3,290  |  12 USD\nC) Cancel",
         "tx_edit_currency_ask": "💱 Which currency? Reply CLP or USD.\nC) Cancel",
-        "tx_edit_desc_ask": "📝 Tell me the description. Example: Uber, groceries, rent...\nC) Cancel",
+        "tx_edit_desc_ask": "📝 Tell me the description.\nC) Cancel",
         "tx_edit_kind_ask": "🔄 Which type? Reply: Expense or Income.\nC) Cancel",
         "tx_need_card_for_payment": "To record a card payment you must choose a card. If you don’t have one, create it on the web (Cards).",
 
+        # ✅ NEW: Categories / Budgets
+        "cat_unknown": (
+            "🔎 I couldn't find a category for: *{kw}*\n\n"
+            "What do you want to do?\n"
+            "1) Link to an existing category\n"
+            "2) Create a new category\n"
+            "0) Leave uncategorized\n"
+            "C) Cancel"
+        ),
+        "cat_pick_existing": (
+            "📌 Pick a category to link *{kw}*.\n"
+            "Reply with 1, 2, 3...\n\n"
+            "{cats}\n\n"
+            "C) Cancel"
+        ),
+        "cat_new_ask_name": "🆕 What is the new category name?\nC) Cancel",
+        "cat_new_pick_existing_budget": (
+            "📆 Do you want to create the monthly budget for this category?\n\n"
+            "{buds}\n\n"
+            "N) Set a new amount\n"
+            "0) Don't create now\n"
+            "C) Cancel"
+        ),
+        "cat_new_ask_amount": "💰 Monthly budget amount (CLP)? Example: 150000\nC) Cancel",
+        "cat_linked_ok": "✅ Done. Linked *{kw}* to category: {cat}.",
+        "cat_created_ok": "✅ Category created: {cat}.",
+        "cat_skipped": "👌 Ok, leaving it uncategorized.",
+        "cat_invalid": "I didn’t get that. Reply with a number or C to cancel.",
+        "cat_no_categories": "No categories yet. Choose option 2 to create one.",
+        "cat_no_budgets": "No monthly budgets found for this month. You can set a new amount (N) or 0 to skip.",
+
         # ---- OCR ----
         "ocr_result_header": "🧾 Text detected in the photo:",
-        "ocr_no_text": (
-            "I couldn’t detect text in the photo.\n\n"
-            "Quick tips:\n"
-            "• Get closer to the receipt\n"
-            "• Good lighting (no shadows)\n"
-            "• Make it sharp (no motion blur)\n"
-            "• Avoid glare/reflections\n"
-        ),
-        "ocr_failed": (
-            "I couldn’t read that photo right now.\n"
-            "In local dev, make sure Tesseract is installed with Spanish language data (spa).\n"
-        ),
+        "ocr_no_text": "I couldn’t detect text in the photo.",
+        "ocr_failed": "I couldn’t read that photo right now.",
     },
 }
 
@@ -500,7 +567,7 @@ def _clean_ocr_text(text: str) -> str:
 def _ocr_via_ocrspace(file_bytes: bytes, lang: str) -> Optional[str]:
     """
     OCR vía ocr.space (opcional). Requiere OCR_SPACE_API_KEY.
-    OJO: Tú no quieres pago => puedes ignorarlo. Si no hay key, retorna None.
+    Si no hay key, retorna None.
     """
     api_key = getattr(settings, "OCR_SPACE_API_KEY", "") or ""
     if not api_key:
@@ -546,11 +613,6 @@ def _ocr_via_ocrspace(file_bytes: bytes, lang: str) -> Optional[str]:
 
 
 def _guess_tessdata_dir() -> Optional[str]:
-    """
-    Mac típicamente:
-      /opt/homebrew/share/tessdata
-      /usr/local/share/tessdata
-    """
     candidates = [
         os.environ.get("TESSDATA_PREFIX", ""),
         "/opt/homebrew/share/tessdata",
@@ -570,20 +632,12 @@ def _tess_has_lang(tessdata_dir: str, lang: str) -> bool:
 
 
 def _ocr_via_tesseract(file_bytes: bytes, lang: str) -> Optional[str]:
-    """
-    OCR local con pytesseract (gratis).
-    Requiere:
-      - pip install pytesseract pillow
-      - brew install tesseract
-      - tener idiomas en tessdata (spa.traineddata, eng.traineddata)
-    """
     try:
         import pytesseract  # type: ignore
         from PIL import Image  # type: ignore
     except Exception:
         return None
 
-    # setea tesseract_cmd si está en PATH
     try:
         cmd = shutil.which("tesseract")
         if cmd:
@@ -591,7 +645,6 @@ def _ocr_via_tesseract(file_bytes: bytes, lang: str) -> Optional[str]:
     except Exception:
         pass
 
-    # setea TESSDATA_PREFIX si se puede inferir
     try:
         tessdata = _guess_tessdata_dir()
         if tessdata and not os.environ.get("TESSDATA_PREFIX"):
@@ -599,7 +652,6 @@ def _ocr_via_tesseract(file_bytes: bytes, lang: str) -> Optional[str]:
     except Exception:
         pass
 
-    # si es pdf, tesseract directo no sirve
     if _is_pdf_bytes(file_bytes):
         return None
 
@@ -607,17 +659,14 @@ def _ocr_via_tesseract(file_bytes: bytes, lang: str) -> Optional[str]:
         pre = _preprocess_image_for_ocr(file_bytes)
         img = Image.open(io.BytesIO(pre))
 
-        # idioma preferido
         desired = "spa" if lang == "es" else "eng"
         tessdata_dir = os.environ.get("TESSDATA_PREFIX", "") or ""
         chosen_lang = desired
 
-        # si queremos spa pero no está, cae a eng
         if desired == "spa":
             if tessdata_dir and not _tess_has_lang(tessdata_dir, "spa"):
                 chosen_lang = "eng"
             else:
-                # si existe, mejor spa+eng (boletas mezcladas)
                 chosen_lang = "spa+eng"
 
         text = pytesseract.image_to_string(img, lang=chosen_lang) or ""
@@ -629,11 +678,6 @@ def _ocr_via_tesseract(file_bytes: bytes, lang: str) -> Optional[str]:
 
 
 def ocr_bytes_to_text(file_bytes: bytes, lang: str) -> Optional[str]:
-    """
-    Orden:
-    1) OCR_SPACE (si hay key)
-    2) Tesseract local
-    """
     if not file_bytes:
         return None
 
@@ -649,10 +693,6 @@ def ocr_bytes_to_text(file_bytes: bytes, lang: str) -> Optional[str]:
 
 
 def _extract_best_file_id_from_msg(msg: dict) -> Optional[str]:
-    """
-    - Si es photo: toma la última (mayor resolución).
-    - Si es document: usa document.file_id.
-    """
     if not msg:
         return None
 
@@ -1059,6 +1099,155 @@ def _apply_card_payment_to_balance(card: Card, amount_clp: Decimal) -> bool:
 
 
 # ------------------------------------------------------------
+# ✅ NUEVO: Budget helpers (keyword -> category + MonthlyBudget)
+# ------------------------------------------------------------
+def _kw_from_description(desc: str) -> str:
+    d = _norm(desc)
+    stop = {"de", "del", "la", "el", "los", "las", "y", "para", "por", "en", "a", "un", "una"}
+    words = [w for w in re.split(r"[^a-z0-9áéíóúñü]+", d) if w and w not in stop]
+    return words[0] if words else (d[:24] or "—")
+
+
+def _cat_label(cat) -> str:
+    return getattr(cat, "name", None) or f"Cat #{getattr(cat, 'id', '')}"
+
+
+def _parse_choice_1n_or_special(text: str, max_n: int) -> Optional[str]:
+    """
+    Returns:
+      - "C" cancel
+      - "0" skip
+      - "N" new amount
+      - "1".."max_n" numeric choice
+      - None if invalid
+    """
+    t = (text or "").strip().lower()
+    if t in ("c", "cancelar", "cancel", "/cancel", "/cancelar"):
+        return "C"
+    if t == "0":
+        return "0"
+    if t == "n":
+        return "N"
+    if t.isdigit():
+        n = int(t)
+        if 1 <= n <= max_n:
+            return str(n)
+    return None
+
+
+def _parse_int_amount_clp(text: str) -> Optional[Decimal]:
+    s = (text or "").strip().replace(" ", "")
+    if not s:
+        return None
+    # "150.000" -> "150000"
+    s = s.replace(".", "").replace(",", "")
+    if not re.match(r"^-?\d+$", s):
+        return None
+    try:
+        d = Decimal(s)
+        if d <= 0:
+            return None
+        return d.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    except Exception:
+        return None
+
+
+def _cat_keywords_norm_list(cat: BudgetCategory) -> List[str]:
+    raw = (getattr(cat, "match_keywords", "") or "").strip()
+    if not raw:
+        return []
+    parts = [p.strip() for p in raw.split(",")]
+    out = []
+    for p in parts:
+        if not p:
+            continue
+        out.append(_norm(p))
+    return [x for x in out if x]
+
+
+def _find_category_for_keyword(user, kw: str) -> Optional[BudgetCategory]:
+    if not BudgetCategory:
+        return None
+    kw_n = _norm(kw)
+    if not kw_n:
+        return None
+
+    cats = BudgetCategory.objects.filter(user=user, is_active=True).order_by("name", "id")
+    for c in cats:
+        if kw_n in _cat_keywords_norm_list(c):
+            return c
+    return None
+
+
+def _append_keyword_to_category(cat: BudgetCategory, kw: str) -> None:
+    kw_n = _norm(kw)
+    if not kw_n:
+        return
+    existing = _cat_keywords_norm_list(cat)
+    if kw_n in existing:
+        return
+
+    raw = (cat.match_keywords or "").strip()
+    if not raw:
+        cat.match_keywords = kw_n
+    else:
+        cat.match_keywords = raw + ", " + kw_n
+    cat.save(update_fields=["match_keywords"])
+
+
+def _list_categories(user) -> List[BudgetCategory]:
+    if not BudgetCategory:
+        return []
+    return list(BudgetCategory.objects.filter(user=user, is_active=True).order_by("name", "id"))
+
+
+def _list_monthly_budgets_current_month(user) -> List[MonthlyBudget]:
+    if not MonthlyBudget:
+        return []
+    m = month_start(timezone.localdate())
+    return list(
+        MonthlyBudget.objects.filter(user=user, month=m)
+        .select_related("category")
+        .order_by("category__name", "id")
+    )
+
+
+def _ensure_monthly_budget_for_category(user, category: BudgetCategory, amount_clp: Decimal) -> None:
+    if not MonthlyBudget:
+        return
+    m = month_start(timezone.localdate())
+    MonthlyBudget.objects.update_or_create(
+        user=user,
+        category=category,
+        month=m,
+        defaults={"amount_clp": amount_clp},
+    )
+
+
+def _render_categories_prompt(cats: List[BudgetCategory]) -> str:
+    lines = []
+    for i, c in enumerate(cats[:10], start=1):
+        lines.append(f"{i}) {_cat_label(c)}")
+    if len(cats) > 10:
+        lines.append(f"... (+{len(cats) - 10} más)")
+    return "\n".join(lines) if lines else "—"
+
+
+def _render_monthly_budgets_prompt(buds: List[MonthlyBudget]) -> str:
+    """
+    Muestra presupuestos del mes actual. Elegir uno = copiar ese monto al nuevo MonthlyBudget.
+    """
+    lines = []
+    for i, b in enumerate(buds[:10], start=1):
+        cat_name = getattr(b.category, "name", "—")
+        amt = getattr(b, "amount_clp", Decimal("0")) or Decimal("0")
+        lines.append(f"{i}) {cat_name}: {_fmt_clp(Decimal(amt))} CLP")
+    if len(buds) > 10:
+        lines.append(f"... (+{len(buds) - 10} más)")
+    return "\n".join(lines) if lines else "—"
+
+
+# ------------------------------------------------------------
 # Draft + Confirmation helpers
 # ------------------------------------------------------------
 def _draft_from_parsed(parsed: ParsedTx, telegram_message_id: int, occurred_at_iso: str) -> dict:
@@ -1071,6 +1260,9 @@ def _draft_from_parsed(parsed: ParsedTx, telegram_message_id: int, occurred_at_i
         "occurred_at": occurred_at_iso,
         "card_id": None,
         "is_card_payment": False,
+        # ✅ NUEVO: para budget-keywords MVP
+        "budget_kw": _kw_from_description(parsed.description or ""),
+        "budget_category_id": None,  # opcional (solo para UI/confirm, Transaction NO lo usa)
     }
 
 
@@ -1098,6 +1290,18 @@ def _draft_summary_text(lang: str, draft: dict, user) -> str:
     lines.append(f"Tipo: {('Pago de tarjeta' if (lang=='es' and is_payment) else ('Card payment' if is_payment else label))}")
     lines.append(f"Monto: {_money(amt, cur, lang)} {cur}")
     lines.append(f"Descripción: {desc}")
+
+    # ✅ NUEVO: mostrar categoría estimada por keyword (si existe)
+    if BudgetCategory and (draft.get("kind") == "expense") and not is_payment:
+        cid = draft.get("budget_category_id")
+        if cid:
+            cat = BudgetCategory.objects.filter(user=user, id=int(cid)).first()
+            if cat:
+                lines.append(f"Categoría: {cat.name}")
+        else:
+            kw = draft.get("budget_kw") or _kw_from_description(desc)
+            if kw:
+                lines.append(f"Categoría: (sin asignar · keyword: {kw})")
 
     if kind == "expense" or is_payment:
         if card_id:
@@ -1364,6 +1568,13 @@ def handle_incoming_telegram_update(payload: dict) -> None:
     STATE_TX_WIZ_AMOUNT = "tx_wiz_amount"
     STATE_TX_WIZ_DESC = "tx_wiz_desc"
 
+    # ✅ NUEVO: estados categorías/presupuestos
+    STATE_TX_CAT_CHOICE = "tx_cat_choice"
+    STATE_TX_CAT_PICK_EXISTING = "tx_cat_pick_existing"
+    STATE_TX_CAT_NEW_NAME = "tx_cat_new_name"
+    STATE_TX_CAT_NEW_PICK_BUDGET = "tx_cat_new_pick_budget"
+    STATE_TX_CAT_NEW_AMOUNT = "tx_cat_new_amount"
+
     if text.strip().lower() in ("/help", "help", "ayuda"):
         tg_send_message(chat_id, _MSG[lang]["help"])
         return
@@ -1396,6 +1607,230 @@ def handle_incoming_telegram_update(payload: dict) -> None:
         conv.reset()
         tg_send_message(chat_id, _MSG[lang]["tx_cancel_ok"])
         return
+
+    # ------------------------------------------------------------
+    # ✅ Flujo categorías/presupuesto (MVP por keywords)
+    # ------------------------------------------------------------
+    if conv.state in (STATE_TX_CAT_CHOICE, STATE_TX_CAT_PICK_EXISTING, STATE_TX_CAT_NEW_NAME,
+                      STATE_TX_CAT_NEW_PICK_BUDGET, STATE_TX_CAT_NEW_AMOUNT):
+
+        payload2 = dict(conv.payload or {})
+        draft = dict(payload2.get("draft") or {})
+        kw = payload2.get("kw") or draft.get("budget_kw") or _kw_from_description(draft.get("description") or "")
+
+        if not draft:
+            conv.reset()
+            return
+
+        # 1) elección principal
+        if conv.state == STATE_TX_CAT_CHOICE:
+            choice = (text or "").strip().lower()
+
+            if choice in ("0", "sin", "no", "ninguna"):
+                draft["budget_category_id"] = None
+                _set_state(conv, STATE_TX_CONFIRM, {"draft": draft})
+                summary = _draft_summary_text(lang, draft, prof.user)
+                tg_send_message(chat_id, summary + "\n\n" + _MSG[lang]["tx_confirm_actions_expense"])
+                return
+
+            if choice in ("1", "asociar", "existente"):
+                if not BudgetCategory:
+                    draft["budget_category_id"] = None
+                    _set_state(conv, STATE_TX_CONFIRM, {"draft": draft})
+                    summary = _draft_summary_text(lang, draft, prof.user)
+                    tg_send_message(chat_id, summary + "\n\n" + _MSG[lang]["tx_confirm_actions_expense"])
+                    return
+
+                cats = _list_categories(prof.user)
+                if not cats:
+                    tg_send_message(chat_id, _MSG[lang]["cat_no_categories"])
+                    return
+
+                show = cats[:10]
+                _set_state(
+                    conv,
+                    STATE_TX_CAT_PICK_EXISTING,
+                    {"draft": draft, "kw": kw, "cat_ids": [c.id for c in show]},
+                )
+                tg_send_message(
+                    chat_id,
+                    _MSG[lang]["cat_pick_existing"].format(kw=kw, cats=_render_categories_prompt(show)),
+                )
+                return
+
+            if choice in ("2", "crear", "nueva"):
+                _set_state(conv, STATE_TX_CAT_NEW_NAME, {"draft": draft, "kw": kw})
+                tg_send_message(chat_id, _MSG[lang]["cat_new_ask_name"])
+                return
+
+            tg_send_message(chat_id, _MSG[lang]["cat_invalid"])
+            return
+
+        # 2) pick categoría existente
+        if conv.state == STATE_TX_CAT_PICK_EXISTING:
+            if not BudgetCategory:
+                conv.reset()
+                return
+
+            cat_ids = payload2.get("cat_ids") or []
+            cats = list(BudgetCategory.objects.filter(user=prof.user, id__in=cat_ids).order_by("name", "id"))
+
+            max_n = len(cats)
+            ch = _parse_choice_1n_or_special(text, max_n=max_n)
+            if ch is None or ch in ("0", "N"):
+                tg_send_message(chat_id, _MSG[lang]["cat_invalid"])
+                return
+            if ch == "C":
+                conv.reset()
+                tg_send_message(chat_id, _MSG[lang]["tx_cancel_ok"])
+                return
+
+            idx = int(ch) - 1
+            if idx < 0 or idx >= max_n:
+                tg_send_message(chat_id, _MSG[lang]["cat_invalid"])
+                return
+
+            cat = cats[idx]
+            draft["budget_category_id"] = cat.id
+            draft["budget_kw"] = kw
+
+            # ✅ guarda mapping agregando keyword a match_keywords
+            _append_keyword_to_category(cat, kw)
+
+            _set_state(conv, STATE_TX_CONFIRM, {"draft": draft})
+            tg_send_message(chat_id, _MSG[lang]["cat_linked_ok"].format(kw=kw, cat=_cat_label(cat)))
+
+            summary = _draft_summary_text(lang, draft, prof.user)
+            tg_send_message(chat_id, summary + "\n\n" + _MSG[lang]["tx_confirm_actions_expense"])
+            return
+
+        # 3) crear categoría: pedir nombre
+        if conv.state == STATE_TX_CAT_NEW_NAME:
+            if not BudgetCategory:
+                conv.reset()
+                return
+
+            name = (text or "").strip()
+            if not name:
+                tg_send_message(chat_id, _MSG[lang]["cat_new_ask_name"])
+                return
+
+            payload2["new_cat_name"] = name
+
+            # mostramos presupuestos actuales para copiar monto
+            buds = _list_monthly_budgets_current_month(prof.user) if MonthlyBudget else []
+            show = buds[:10]
+
+            _set_state(
+                conv,
+                STATE_TX_CAT_NEW_PICK_BUDGET,
+                {"draft": draft, "kw": kw, "new_cat_name": name, "bud_ids": [b.id for b in show]},
+            )
+
+            buds_txt = _render_monthly_budgets_prompt(show)
+            if not show:
+                buds_txt = _MSG[lang]["cat_no_budgets"] + "\n\n" + "(0) Saltar\nN) Definir monto nuevo\nC) Cancelar"
+
+            tg_send_message(chat_id, _MSG[lang]["cat_new_pick_existing_budget"].format(buds=buds_txt))
+            return
+
+        # 4) elegir presupuesto existente para copiar monto, o N para monto nuevo, o 0 para saltar
+        if conv.state == STATE_TX_CAT_NEW_PICK_BUDGET:
+            if not BudgetCategory:
+                conv.reset()
+                return
+
+            bud_ids = payload2.get("bud_ids") or []
+            buds = []
+            if MonthlyBudget and bud_ids:
+                buds = list(MonthlyBudget.objects.filter(user=prof.user, id__in=bud_ids).select_related("category").order_by("id"))
+
+            max_n = len(buds)
+            ch = _parse_choice_1n_or_special(text, max_n=max_n)
+            if ch is None:
+                tg_send_message(chat_id, _MSG[lang]["cat_invalid"])
+                return
+            if ch == "C":
+                conv.reset()
+                tg_send_message(chat_id, _MSG[lang]["tx_cancel_ok"])
+                return
+
+            # 0 = no crear presupuesto por ahora
+            if ch == "0":
+                name = payload2.get("new_cat_name") or "Nueva categoría"
+                cat = BudgetCategory.objects.create(user=prof.user, name=name, match_keywords=_norm(kw), is_active=True)
+                draft["budget_category_id"] = cat.id
+                draft["budget_kw"] = kw
+
+                _set_state(conv, STATE_TX_CONFIRM, {"draft": draft})
+                tg_send_message(chat_id, _MSG[lang]["cat_created_ok"].format(cat=_cat_label(cat)))
+
+                summary = _draft_summary_text(lang, draft, prof.user)
+                tg_send_message(chat_id, summary + "\n\n" + _MSG[lang]["tx_confirm_actions_expense"])
+                return
+
+            # N = pedir monto nuevo
+            if ch == "N":
+                _set_state(
+                    conv,
+                    STATE_TX_CAT_NEW_AMOUNT,
+                    {"draft": draft, "kw": kw, "new_cat_name": payload2.get("new_cat_name")},
+                )
+                tg_send_message(chat_id, _MSG[lang]["cat_new_ask_amount"])
+                return
+
+            # número = copiar monto de presupuesto existente
+            idx = int(ch) - 1
+            if idx < 0 or idx >= max_n:
+                tg_send_message(chat_id, _MSG[lang]["cat_invalid"])
+                return
+
+            picked = buds[idx]
+            amt = Decimal(getattr(picked, "amount_clp", Decimal("0")) or Decimal("0")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+
+            name = payload2.get("new_cat_name") or "Nueva categoría"
+            cat = BudgetCategory.objects.create(user=prof.user, name=name, match_keywords=_norm(kw), is_active=True)
+
+            # crea MonthlyBudget del mes actual con el monto copiado
+            if MonthlyBudget:
+                _ensure_monthly_budget_for_category(prof.user, cat, amt)
+
+            draft["budget_category_id"] = cat.id
+            draft["budget_kw"] = kw
+
+            _set_state(conv, STATE_TX_CONFIRM, {"draft": draft})
+            tg_send_message(chat_id, _MSG[lang]["cat_created_ok"].format(cat=_cat_label(cat)))
+
+            summary = _draft_summary_text(lang, draft, prof.user)
+            tg_send_message(chat_id, summary + "\n\n" + _MSG[lang]["tx_confirm_actions_expense"])
+            return
+
+        # 5) monto nuevo
+        if conv.state == STATE_TX_CAT_NEW_AMOUNT:
+            if not BudgetCategory:
+                conv.reset()
+                return
+
+            amt = _parse_int_amount_clp(text)
+            if amt is None:
+                tg_send_message(chat_id, _MSG[lang]["cat_new_ask_amount"])
+                return
+
+            name = payload2.get("new_cat_name") or "Nueva categoría"
+            cat = BudgetCategory.objects.create(user=prof.user, name=name, match_keywords=_norm(kw), is_active=True)
+
+            if MonthlyBudget:
+                _ensure_monthly_budget_for_category(prof.user, cat, amt)
+
+            draft["budget_category_id"] = cat.id
+            draft["budget_kw"] = kw
+
+            _set_state(conv, STATE_TX_CONFIRM, {"draft": draft})
+            tg_send_message(chat_id, _MSG[lang]["cat_created_ok"].format(cat=_cat_label(cat)))
+
+            summary = _draft_summary_text(lang, draft, prof.user)
+            tg_send_message(chat_id, summary + "\n\n" + _MSG[lang]["tx_confirm_actions_expense"])
+            return
 
     # ------------------------------------------------------------
     # Confirmación antes de guardar
@@ -1584,6 +2019,8 @@ def handle_incoming_telegram_update(payload: dict) -> None:
                 tg_send_message(chat_id, _MSG[lang]["tx_edit_desc_ask"])
                 return
             draft["description"] = desc
+            # ✅ recalcula keyword por si cambió la descripción
+            draft["budget_kw"] = _kw_from_description(desc)
 
         elif conv.state == STATE_TX_EDIT_KIND:
             k = _parse_kind_only(text)
@@ -1619,6 +2056,8 @@ def handle_incoming_telegram_update(payload: dict) -> None:
             "occurred_at": timezone.now().isoformat(),
             "card_id": None,
             "is_card_payment": False,
+            "budget_kw": "",
+            "budget_category_id": None,
         }
         _set_state(conv, STATE_TX_WIZ_AMOUNT, {"draft": draft})
         tg_send_message(chat_id, _MSG[lang]["tx_edit_amount_ask"])
@@ -1639,6 +2078,8 @@ def handle_incoming_telegram_update(payload: dict) -> None:
             "occurred_at": timezone.now().isoformat(),
             "card_id": None,
             "is_card_payment": True,
+            "budget_kw": "",
+            "budget_category_id": None,
         }
         _set_state(conv, STATE_TX_WIZ_AMOUNT, {"draft": draft})
         tg_send_message(chat_id, _MSG[lang]["tx_edit_amount_ask"])
@@ -1698,6 +2139,18 @@ def handle_incoming_telegram_update(payload: dict) -> None:
             return
 
         draft["description"] = desc
+        draft["budget_kw"] = _kw_from_description(desc)
+
+        # ✅ NUEVO: antes de confirmar, resolver categoría por keyword (solo gasto normal)
+        if BudgetCategory and (draft.get("kind") == "expense") and (not draft.get("is_card_payment")):
+            kw = draft.get("budget_kw") or _kw_from_description(desc)
+            cat = _find_category_for_keyword(prof.user, kw)
+            if cat:
+                draft["budget_category_id"] = cat.id
+            else:
+                _set_state(conv, STATE_TX_CAT_CHOICE, {"draft": draft, "kw": kw})
+                tg_send_message(chat_id, _MSG[lang]["cat_unknown"].format(kw=kw))
+                return
 
         if (draft.get("kind") == "expense"):
             all_cards = list(Card.objects.filter(user=prof.user, is_active=True).order_by("name", "id"))
@@ -2131,6 +2584,17 @@ def handle_incoming_telegram_update(payload: dict) -> None:
 
     draft = _draft_from_parsed(parsed, telegram_message_id=int(message_id), occurred_at_iso=timezone.now().isoformat())
 
+    # ✅ NUEVO: resolver categoría por keyword antes de seguir (solo gastos normales)
+    if BudgetCategory and parsed.kind == "expense":
+        kw = draft.get("budget_kw") or _kw_from_description(parsed.description or "")
+        cat = _find_category_for_keyword(prof.user, kw)
+        if cat:
+            draft["budget_category_id"] = cat.id
+        else:
+            _set_state(conv, STATE_TX_CAT_CHOICE, {"draft": draft, "kw": kw})
+            tg_send_message(chat_id, _MSG[lang]["cat_unknown"].format(kw=kw))
+            return
+
     all_cards = list(Card.objects.filter(user=prof.user, is_active=True).order_by("name", "id"))
     if all_cards and parsed.kind == "expense":
         chosen_card, candidates = _resolve_card_from_text(prof.user, parsed.raw_text)
@@ -2159,3 +2623,4 @@ def handle_incoming_telegram_update(payload: dict) -> None:
         tg_send_message(chat_id, summary + "\n\n" + _MSG[lang]["tx_confirm_actions_income"])
     else:
         tg_send_message(chat_id, summary + "\n\n" + _MSG[lang]["tx_confirm_actions_expense"])
+    return

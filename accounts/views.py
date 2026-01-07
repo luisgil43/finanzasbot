@@ -145,7 +145,11 @@ def signup(request):
 
             prof, _ = UserProfile.objects.get_or_create(user=user)
             prof.email_verified = False
-            prof.save(update_fields=["email_verified"])
+
+            # ✅ NUEVO: guardar fecha nacimiento
+            prof.birth_date = form.cleaned_data.get("birth_date")
+
+            prof.save(update_fields=["email_verified", "birth_date"])
 
             try:
                 _send_verification_email(user)
@@ -157,8 +161,6 @@ def signup(request):
                     "No pudimos enviar el correo de verificación (SMTP). "
                     "Intenta nuevamente en unos minutos."
                 )
-                # opcional: evitar cuentas muertas
-                # user.delete()
                 return render(request, "accounts/signup.html", {"form": form})
 
             return render(request, "accounts/signup_done.html", {"email": user.email})
@@ -167,7 +169,6 @@ def signup(request):
 
     form = SignUpForm()
     return render(request, "accounts/signup.html", {"form": form})
-
 
 def _send_verification_email(user):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
