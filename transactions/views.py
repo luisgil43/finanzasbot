@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from decimal import Decimal, InvalidOperation
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
+from budgets.models import BudgetCategory  # ✅ NUEVO
 from cards.models import Card
 from transactions.fx import get_usd_to_clp
 from transactions.models import Transaction
@@ -29,9 +30,48 @@ def _parse_decimal(s: str) -> Optional[Decimal]:
         return None
 
 
+def _load_user_categories(user) -> List[Tuple[BudgetCategory, List[str]]]:
+    """
+    Carga categorías activas del usuario y sus keywords en minúscula.
+    """
+    cats = BudgetCategory.objects.filter(user=user, is_active=True).order_by("name", "id")
+    out: List[Tuple[BudgetCategory, List[str]]] = []
+    for c in cats:
+        kws = []
+        raw = (c.match_keywords or "").strip()
+        if raw:
+            kws = [p.strip().lower() for p in raw.split(",") if p.strip()]
+        out.append((c, kws))
+    return out
+
+
+def _infer_category_from_description(
+    categories: List[Tuple[BudgetCategory, List[str]]],
+    description: str,
+) -> Optional[BudgetCategory]:
+    """
+    Regla MVP: asigna la primera categoría cuyo keyword aparezca en la descripción.
+    (Puedes cambiar luego a “mejor match” si quieres).
+    """
+    text = (description or "").strip().lower()
+    if not text:
+        return None
+
+    for cat, kws in categories:
+        for kw in kws:
+            if kw and kw in text:
+                return cat
+    return None
+
+
 @login_required
 def transaction_list(request):
-    qs = Transaction.objects.filter(user=request.user).order_by("-occurred_at", "-id")
+    qs = (
+        Transaction.objects
+        .filter(user=request.user)
+        .select_related("card")  # ✅ solo relaciones reales
+        .order_by("-occurred_at", "-id")
+    )
 
     kind = (request.GET.get("kind") or "").strip()
     cur = (request.GET.get("cur") or "").strip()
@@ -73,6 +113,15 @@ def transaction_list(request):
 
     paginator = Paginator(qs, 25)
     page = paginator.get_page(request.GET.get("page") or 1)
+
+    # ✅ NUEVO: calcular categoría por keywords y “inyectar” t.category para el template
+    user_categories = _load_user_categories(request.user)
+    for t in page.object_list:
+        # Solo tiene sentido categorizar gastos, pero si quieres para income también, quita el if
+        if getattr(t, "kind", None) == Transaction.KIND_EXPENSE:
+            t.category = _infer_category_from_description(user_categories, getattr(t, "description", "") or "")
+        else:
+            t.category = None
 
     cards = Card.objects.filter(user=request.user).order_by("-is_active", "name")
 
@@ -264,6 +313,13 @@ def transaction_edit(request, pk: int):
     # GET: precargar form
     occurred_at_local = timezone.localtime(tx.occurred_at) if tx.occurred_at else timezone.localtime(timezone.now())
     occurred_at_str = occurred_at_local.strftime("%Y-%m-%dT%H:%M")
+
+    # ✅ NUEVO: categoría inferida para mostrar en el form (solo lectura)
+    user_categories = _load_user_categories(request.user)
+    if tx.kind == Transaction.KIND_EXPENSE:
+        tx.category = _infer_category_from_description(user_categories, tx.description or "")
+    else:
+        tx.category = None
 
     return render(
         request,

@@ -95,6 +95,7 @@
           <th class="text-left p-3">{% trans "Tipo" %}</th>
           <th class="text-left p-3">{% trans "Descripción" %}</th>
           <th class="text-left p-3">{% trans "Tarjeta" %}</th> <!-- ✅ NUEVO -->
+          <th class="text-left p-3">{% trans "Categoría" %}</th>
           <th class="text-right p-3">{% trans "Original" %}</th>
           <th class="text-right p-3">{% trans "CLP base" %}</th>
           <th class="text-right p-3">{% trans "Acciones" %}</th>
@@ -123,7 +124,15 @@
                 <span class="text-slate-400">—</span>
               {% endif %}
             </td>
-
+            <td class="p-3 text-slate-200">
+            {% if t.category %}
+             {{ t.category.name }}
+            {% elif t.budget_category %}
+            {{ t.budget_category.name }}
+            {% else %}
+            <span class="text-slate-400">—</span>
+            {% endif %}
+            </td>
             <td class="p-3 text-right font-semibold">
               {{ t.amount_original|money:t.currency_original }}
               <span class="text-slate-300 font-normal">{{ t.currency_original }}</span>
@@ -152,7 +161,7 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="7" class="p-4 text-slate-300">{% trans "Aún no tienes movimientos." %}</td>
+            <td colspan="8" class="p-4 text-slate-300">{% trans "Aún no tienes movimientos." %}</td>
           </tr>
         {% endfor %}
       </tbody>

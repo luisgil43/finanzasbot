@@ -93,6 +93,29 @@
       </select>
     </div>
 
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+  <div class="text-xs text-slate-300">{% trans "Categoría" %}</div>
+
+  {% if mode == "edit" and tx %}
+    <div class="mt-1 text-sm text-slate-100">
+      {% if tx.category %}
+        {{ tx.category.name }}
+      {% elif tx.budget_category %}
+        {{ tx.budget_category.name }}
+      {% else %}
+        <span class="text-slate-400">—</span>
+      {% endif %}
+    </div>
+    <div class="text-xs text-slate-400 mt-1">
+      {% trans "Esta categoría se asigna automáticamente según tu configuración de presupuestos." %}
+    </div>
+  {% else %}
+    <div class="mt-1 text-sm text-slate-400">
+      {% trans "Se asignará automáticamente al guardar." %}
+    </div>
+  {% endif %}
+</div>
+
     <div class="grid sm:grid-cols-2 gap-3">
       <div>
         <label class="text-xs text-slate-300">{% trans "Monto" %}</label>
